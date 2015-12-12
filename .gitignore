@@ -1,0 +1,8 @@
+*.exe
+*.dll
+*.xor
+*.ico
+*.icns
+exe/embed/paper32
+exe/embed/paper64
+obj/

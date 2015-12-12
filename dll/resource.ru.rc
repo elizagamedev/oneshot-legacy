@@ -1,0 +1,10 @@
+MAINICON	ICON	"../icon.ico"
+LOGO1		XYZ	"embed/logo.ru.xyz"
+
+WALLPAPER	RCDATA	"embed/wallpaper.raw"
+DOCUMENT1	RCDATA	"embed/INFORMATION.ru.1.txt"
+DOCUMENT2	RCDATA	"embed/INFORMATION.ru.2.txt"
+
+NIKO1		BITMAP	"embed/niko1.bmp"
+NIKO2		BITMAP	"embed/niko2.bmp"
+NIKO3		BITMAP	"embed/niko3.bmp"

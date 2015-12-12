@@ -1,0 +1,8 @@
+MAINICON	ICON "../icon.ico"
+
+RPG_RT_EXE	RCDATA "embed/RPG_RT.exe.xor"
+HOOK_DLL	RCDATA "embed/hook.dll.xor"
+FUNC_SH		RCDATA "embed/func.sh"
+SNDFILE_DLL	RCDATA "embed/libsndfile-1.dll.xor"
+PAPER_32	RCDATA "embed/paper32"
+PAPER_64	RCDATA "embed/paper64"
