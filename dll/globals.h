@@ -25,36 +25,36 @@
 
 enum
 {
-	WIN_UNSUPPORTED,
-	WIN_WINE,
-	WIN_XP,
-	WIN_VISTA,
-	WIN_7,
-	WIN_8,
-	WIN_8_1,
-	WIN_FUTURE,
+    WIN_UNSUPPORTED,
+    WIN_WINE,
+    WIN_XP,
+    WIN_VISTA,
+    WIN_7,
+    WIN_8,
+    WIN_8_1,
+    WIN_FUTURE,
 };
 
 enum
 {
-	VAR_FUNC,
-	VAR_ARG1,
-	VAR_ARG2,
-	VAR_ARG3,
-	VAR_ARG4,
-	VAR_RETURN,
-	VAR_ENDING,
-	VAR_SAFE_CODE = 28,
-	VAR_GEORGE = 46,
+    VAR_FUNC,
+    VAR_ARG1,
+    VAR_ARG2,
+    VAR_ARG3,
+    VAR_ARG4,
+    VAR_RETURN,
+    VAR_ENDING,
+    VAR_SAFE_CODE = 28,
+    VAR_GEORGE = 46,
 };
 
 enum
 {
-	ENDING_BEGINNING,
-	ENDING_DEJAVU,
-	ENDING_DEAD,
-	ENDING_ESCAPED,
-	ENDING_TRAPPED,
+    ENDING_BEGINNING,
+    ENDING_DEJAVU,
+    ENDING_DEAD,
+    ENDING_ESCAPED,
+    ENDING_TRAPPED,
 };
 
 wchar_t* _aswprintf(const wchar_t* fmt, ...);

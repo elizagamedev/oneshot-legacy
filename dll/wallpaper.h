@@ -5,20 +5,20 @@
 
 typedef enum
 {
-	STYLE_NONE,
-	STYLE_CENTER,
-	STYLE_TILE,
-	STYLE_STRETCH,
-	STYLE_FIT,
-	STYLE_FILL,
-	STYLE_SPAN,
+    STYLE_NONE,
+    STYLE_CENTER,
+    STYLE_TILE,
+    STYLE_STRETCH,
+    STYLE_FIT,
+    STYLE_FILL,
+    STYLE_SPAN,
 } WallpaperStyle;
 
 typedef enum
 {
-	SHADING_SOLID,
-	SHADING_VERTICAL,
-	SHADING_HORIZONTAL,
+    SHADING_SOLID,
+    SHADING_VERTICAL,
+    SHADING_HORIZONTAL,
 } WallpaperShading;
 
 //There are two possibilities for representing the wallpaper:
@@ -26,11 +26,11 @@ typedef enum
 
 typedef struct
 {
-	LPWSTR filename;
-	WallpaperStyle style;
-	WallpaperShading shading;
-	unsigned int colorPrimary;
-	unsigned int colorSecondary;
+    LPWSTR filename;
+    WallpaperStyle style;
+    WallpaperShading shading;
+    unsigned int colorPrimary;
+    unsigned int colorSecondary;
 } Wallpaper;
 
 void wallpaper_get(Wallpaper* wallpaper);

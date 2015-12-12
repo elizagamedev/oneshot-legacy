@@ -6,13 +6,13 @@
 wchar_t*
 _aswprintf(const wchar_t* fmt, ...)
 {
-	va_list va_args;
-	va_start(va_args, fmt);
-	int size = _vscwprintf(fmt, va_args) + 1;
-	wchar_t* dst = malloc(size * 2);
-	vsnwprintf(dst, size, fmt, va_args);
-	va_end(va_args);
-	return dst;
+    va_list va_args;
+    va_start(va_args, fmt);
+    int size = _vscwprintf(fmt, va_args) + 1;
+    wchar_t* dst = malloc(size * 2);
+    vsnwprintf(dst, size, fmt, va_args);
+    va_end(va_args);
+    return dst;
 }
 
 int winver = WIN_UNSUPPORTED;
