@@ -40,13 +40,13 @@ static int CALLBACK callback_font(const LOGFONTA *lpelfe, const TEXTMETRICA *lpn
 {
     int i = 0;
     int limit = ((font == -1) ? FONTS_SIZE : font);
-    for(; i < limit; i++) {
-        if(!strcmp(fonts[i], lpelfe->lfFaceName)) {
+    for (; i < limit; i++) {
+        if (!strcmp(fonts[i], lpelfe->lfFaceName)) {
             font = i;
             break;
         }
     }
-    if(font == 0)
+    if (font == 0)
         return 0;
     return 1;
 }
@@ -114,7 +114,7 @@ DWORD WINAPI
 hook_GetFullPathNameA(LPCSTR lpFileName, DWORD nBufferLength, LPSTR lpBuffer, LPSTR *lpFilePart)
 {
     strcpy(lpBuffer, lpFileName);
-    if(lpFilePart)
+    if (lpFilePart)
         *lpFilePart = lpBuffer;
     return strlen(lpBuffer);
 }
@@ -127,13 +127,10 @@ hook_FindFirstFileA(LPCSTR lpFileName, LPWIN32_FIND_DATAA lpFindFileData)
     HANDLE result = FindFirstFileW(lpFileName16, &findFileData16);
     memcpy(lpFindFileData, &findFileData16, sizeof(WIN32_FIND_DATAA) - sizeof(lpFindFileData->cFileName) - sizeof(lpFindFileData->cAlternateFileName));
 
-    if(result == INVALID_HANDLE_VALUE)
-    {
+    if (result == INVALID_HANDLE_VALUE) {
         *lpFindFileData->cFileName = 0;
         *lpFindFileData->cAlternateFileName = 0;
-    }
-    else
-    {
+    } else {
         util_getAnsiBuff(findFileData16.cFileName, lpFindFileData->cFileName, MAX_PATH);
         util_getAnsiBuff(findFileData16.cAlternateFileName, lpFindFileData->cAlternateFileName, 14);
     }
@@ -146,49 +143,43 @@ HANDLE WINAPI
 hook_CreateFileA(LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile)
 {
     //See if this is a function or otherwise special file
-    if(!stricmp(lpFileName, "Title\\title.xyz"))
-    {
-        if(ending <= ENDING_DEJAVU)
-        {
-            if(oneshot)
+    if (!stricmp(lpFileName, "Title\\title.xyz")) {
+        if (ending <= ENDING_DEJAVU) {
+            if (oneshot)
                 ending = ENDING_DEAD;
-            else if(gameStarted)
+            else if (gameStarted)
                 ending = ENDING_DEJAVU;
 
             util_saveEnding();
         }
 
         //Create the kitty escape window if it doesn't exist
-        if(!wndKitty)
+        if (!wndKitty)
             wndKitty_create();
 
         //Make sure we flag this as not being in-game anymore
         isInGame = FALSE;
         oneshot = FALSE;
-    }
-    else if(!stricmp(lpFileName, "Sound\\_init.wav"))
+    } else if (!stricmp(lpFileName, "Sound\\_init.wav")) {
         func_init();
-    else if(!stricmp(lpFileName, "Sound\\_func.wav"))
+    } else if (!stricmp(lpFileName, "Sound\\_func.wav")) {
         funcs[variables[VAR_FUNC]]();
+    }
 
     LPWSTR lpFileName16 = util_getFilename(lpFileName);
-    if(_wcsnicmp(lpFileName16, L"Music\\", 6))
-    {
+    if (_wcsnicmp(lpFileName16, L"Music\\", 6)) {
         HANDLE result = CreateFileW(lpFileName16, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
         free(lpFileName16);
         return result;
     }
 
     //Convert the ogg to a wav in memory
-    if(szOggOld && !wcsicmp(szOggOld, lpFileName16))
-    {
+    if (szOggOld && !wcsicmp(szOggOld, lpFileName16)) {
         //If we've already got an OGG loaded in memory with this filename,
         //just reset it
         wav_vio_seek(0, SEEK_SET, NULL);
         free(lpFileName16);
-    }
-    else
-    {
+    } else {
         //Load the new ogg
         ogg_free();
         ogg_read(lpFileName16);
@@ -201,10 +192,9 @@ hook_CreateFileA(LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LP
 BOOL WINAPI
 hook_ReadFile(HANDLE hFile, LPVOID lpBuffer, DWORD nNumberOfBytesToRead, LPDWORD lpNumberOfBytesRead, LPOVERLAPPED lpOverlapped)
 {
-    if(hFile == HFILE_FAKE)
-    {
+    if (hFile == HFILE_FAKE) {
         sf_count_t count = wav_vio_read(lpBuffer, nNumberOfBytesToRead, NULL);
-        if(lpNumberOfBytesRead)
+        if (lpNumberOfBytesRead)
             *lpNumberOfBytesRead = count;
         return TRUE;
     }
@@ -214,11 +204,9 @@ hook_ReadFile(HANDLE hFile, LPVOID lpBuffer, DWORD nNumberOfBytesToRead, LPDWORD
 DWORD WINAPI
 hook_SetFilePointer(HANDLE hFile, LONG lDistanceToMove, PLONG lpDistanceToMoveHigh, DWORD dwMoveMethod)
 {
-    if(hFile == HFILE_FAKE)
-    {
+    if (hFile == HFILE_FAKE) {
         int whence;
-        switch(dwMoveMethod)
-        {
+        switch (dwMoveMethod) {
         default:
         case FILE_BEGIN:
             whence = SEEK_SET;
@@ -238,7 +226,7 @@ hook_SetFilePointer(HANDLE hFile, LONG lDistanceToMove, PLONG lpDistanceToMoveHi
 BOOL WINAPI
 hook_CloseHandle(HANDLE hObject)
 {
-    if(hObject == HFILE_FAKE)
+    if (hObject == HFILE_FAKE)
         return TRUE;
     return CloseHandle(hObject);
 }
@@ -256,8 +244,7 @@ DWORD WINAPI
 hook_GetPrivateProfileStringA(LPCSTR lpAppName, LPCSTR lpKeyName, LPCSTR lpDefault, LPSTR lpReturnedString, DWORD nSize, LPCSTR lpFileName)
 {
     //Force FullPackageFlag to be 1
-    if(!stricmp(lpKeyName, "FullPackageFlag"))
-    {
+    if (!stricmp(lpKeyName, "FullPackageFlag")) {
         lpReturnedString[0] = '1';
         lpReturnedString[1] = 0;
         return 1;
@@ -273,8 +260,7 @@ HRSRC logo1 = NULL;
 HRSRC WINAPI
 hook_FindResourceA(HMODULE hModule, LPCSTR lpName, LPCSTR lpType)
 {
-    if(!stricmp(lpName, "LOGO1"))
-    {
+    if (!stricmp(lpName, "LOGO1")) {
         logo1 = FindResourceA(dll_hInstance, lpName, lpType);
         return logo1;
     }
@@ -284,7 +270,7 @@ hook_FindResourceA(HMODULE hModule, LPCSTR lpName, LPCSTR lpType)
 DWORD WINAPI
 hook_SizeofResource(HMODULE hModule, HRSRC hResInfo)
 {
-    if(hResInfo == logo1)
+    if (hResInfo == logo1)
         return SizeofResource(dll_hInstance, hResInfo);
     return SizeofResource(hModule, hResInfo);
 }
@@ -292,7 +278,7 @@ hook_SizeofResource(HMODULE hModule, HRSRC hResInfo)
 HGLOBAL WINAPI
 hook_LoadResource(HMODULE hModule, HRSRC hResInfo)
 {
-    if(hResInfo == logo1)
+    if (hResInfo == logo1)
         return LoadResource(dll_hInstance, hResInfo);
     return LoadResource(hModule, hResInfo);
 }
@@ -303,7 +289,7 @@ hook_LoadResource(HMODULE hModule, HRSRC hResInfo)
 int WINAPI
 hook_GetSystemMetrics(int nIndex)
 {
-    if(nIndex == SM_DBCSENABLED)
+    if (nIndex == SM_DBCSENABLED)
         return TRUE;
     return GetSystemMetrics(nIndex);
 }
@@ -312,8 +298,7 @@ hook_GetSystemMetrics(int nIndex)
 HWND WINAPI
 hook_CreateWindowExA(DWORD dwExStyle, LPCSTR lpClassName, LPCSTR lpWindowName, DWORD dwStyle, int x, int y, int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam)
 {
-    if(!strcmp(lpClassName, "TFormLcfGameMain"))
-    {
+    if (!strcmp(lpClassName, "TFormLcfGameMain")) {
         window = CreateWindowExW(dwExStyle, L"TFormLcfGameMain", L"Oneshot", dwStyle, x, y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
         return window;
     }
@@ -328,8 +313,8 @@ hook_RegisterClassA(const WNDCLASSA *lpWndClass)
     wndClass16.lpszMenuName = util_getUnicode(lpWndClass->lpszMenuName);
     wndClass16.lpszClassName = util_getUnicode(lpWndClass->lpszClassName);
     ATOM result = RegisterClassW(&wndClass16);
-    free((void*)wndClass16.lpszMenuName);
-    free((void*)wndClass16.lpszClassName);
+    free((void *)wndClass16.lpszMenuName);
+    free((void *)wndClass16.lpszClassName);
     return result;
 }
 
@@ -338,8 +323,7 @@ WNDPROC wndproc = NULL;
 LRESULT CALLBACK
 hook_wndproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    switch(msg)
-    {
+    switch (msg) {
     case WM_CLOSE:
         func_Close();
         return 0;
@@ -356,12 +340,11 @@ hook_wndproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 LONG WINAPI
 hook_SetWindowLongA(HWND hWnd, int nIndex, LONG dwNewLong)
 {
-    if(window && hWnd == window && nIndex == GWL_WNDPROC)
-    {
+    if (window && hWnd == window && nIndex == GWL_WNDPROC) {
         LONG old1 = (LONG)wndproc;
         LONG old2 = SetWindowLongW(window, GWL_WNDPROC, (LONG)hook_wndproc);
         wndproc = (WNDPROC)dwNewLong;
-        if(old1)
+        if (old1)
             return old1;
         return old2;
     }
@@ -377,11 +360,10 @@ hook_GetWindowLongA(HWND hWnd, int nIndex)
 LRESULT WINAPI
 hook_DefWindowProcA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
-    switch(Msg)
-    {
+    switch (Msg) {
     case WM_SETTEXT:
         //Ignore if the first byte is a null--this is the string sent by the game
-        if(*((char*)lParam) == 0)
+        if (*((char *)lParam) == 0)
             return TRUE;
         break;
     case WM_GETTEXTLENGTH:
@@ -401,8 +383,7 @@ hook_LoadIconA(HINSTANCE hInstance, LPCSTR lpIconName)
 BOOL WINAPI
 hook_SetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags)
 {
-    if(hWnd == window && X && Y)
-    {
+    if (hWnd == window && X && Y) {
         X -= 2;
         Y -= 2;
         cx -= 4;
@@ -414,7 +395,7 @@ hook_SetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy,
 //ADVAPI
 LONG WINAPI
 hook_RegCreateKeyExA(HKEY hKey, LPCSTR lpSubKey, DWORD Reserved, LPSTR lpClass, DWORD dwOptions,
-                    REGSAM samDesired, LPSECURITY_ATTRIBUTES lpSecurityAttributes, PHKEY phkResult, LPDWORD lpdwDisposition)
+                     REGSAM samDesired, LPSECURITY_ATTRIBUTES lpSecurityAttributes, PHKEY phkResult, LPDWORD lpdwDisposition)
 {
     *phkResult = HKEY_FAKE;
     return ERROR_SUCCESS;
@@ -474,7 +455,7 @@ HFONT WINAPI
 hook_CreateFontIndirectA(const LOGFONTA *lplf)
 {
 #ifdef FONT_LOOKUP
-    if(font != -1) {
+    if (font != -1) {
         LOGFONTA lf;
         memcpy(&lf, lplf, sizeof(LOGFONTA) - sizeof(lplf->lfFaceName));
         strcpy(lf.lfFaceName, fonts[font]);
@@ -500,7 +481,7 @@ void hook_QueryInterface(REFIID riid, void **ppvObject);
 #if 0
 //IBasicAudio
 STDMETHODIMP
-hook_IBasicAudio_QueryInterface(IBasicAudio* This, REFIID riid, void **ppvObject)
+hook_IBasicAudio_QueryInterface(IBasicAudio *This, REFIID riid, void **ppvObject)
 {
     GET_VTBL(IBasicAudioVtbl);
 
@@ -512,19 +493,19 @@ hook_IBasicAudio_QueryInterface(IBasicAudio* This, REFIID riid, void **ppvObject
 }
 
 ULONG WINAPI
-hook_IBasicAudio_Release(IBasicAudio* This)
+hook_IBasicAudio_Release(IBasicAudio *This)
 {
     GET_VTBL(IBasicAudioVtbl);
 
     printf("IBasicAudio: %p: Release\n", This);
 
-    free((void*)This->lpVtbl);
+    free((void *)This->lpVtbl);
     This->lpVtbl = vtbl;
     return vtbl->Release(This);
 }
 
 STDMETHODIMP
-hook_IBasicAudio_get_Balance(IBasicAudio* This, long *plBalance)
+hook_IBasicAudio_get_Balance(IBasicAudio *This, long *plBalance)
 {
     GET_VTBL(IBasicAudioVtbl);
 
@@ -534,7 +515,7 @@ hook_IBasicAudio_get_Balance(IBasicAudio* This, long *plBalance)
 }
 
 STDMETHODIMP
-hook_IBasicAudio_get_Volume(IBasicAudio* This, long *plVolume)
+hook_IBasicAudio_get_Volume(IBasicAudio *This, long *plVolume)
 {
     GET_VTBL(IBasicAudioVtbl);
 
@@ -544,7 +525,7 @@ hook_IBasicAudio_get_Volume(IBasicAudio* This, long *plVolume)
 }
 
 STDMETHODIMP
-hook_IBasicAudio_put_Balance(IBasicAudio* This, long lBalance)
+hook_IBasicAudio_put_Balance(IBasicAudio *This, long lBalance)
 {
     GET_VTBL(IBasicAudioVtbl);
 
@@ -554,7 +535,7 @@ hook_IBasicAudio_put_Balance(IBasicAudio* This, long lBalance)
 }
 
 STDMETHODIMP
-hook_IBasicAudio_put_Volume(IBasicAudio* This, long lVolume)
+hook_IBasicAudio_put_Volume(IBasicAudio *This, long lVolume)
 {
     GET_VTBL(IBasicAudioVtbl);
 
@@ -565,7 +546,7 @@ hook_IBasicAudio_put_Volume(IBasicAudio* This, long lVolume)
 
 //IMediaControl
 STDMETHODIMP
-hook_IMediaControl_QueryInterface(IMediaControl* This, REFIID riid, void **ppvObject)
+hook_IMediaControl_QueryInterface(IMediaControl *This, REFIID riid, void **ppvObject)
 {
     GET_VTBL(IMediaControlVtbl);
 
@@ -577,19 +558,19 @@ hook_IMediaControl_QueryInterface(IMediaControl* This, REFIID riid, void **ppvOb
 }
 
 ULONG WINAPI
-hook_IMediaControl_Release(IMediaControl* This)
+hook_IMediaControl_Release(IMediaControl *This)
 {
     GET_VTBL(IMediaControlVtbl);
 
     printf("IMediaControl: %p: Release\n", This);
 
-    free((void*)This->lpVtbl);
+    free((void *)This->lpVtbl);
     This->lpVtbl = vtbl;
     return vtbl->Release(This);
 }
 
 STDMETHODIMP
-hook_IMediaControl_Run(IMediaControl* This)
+hook_IMediaControl_Run(IMediaControl *This)
 {
     GET_VTBL(IMediaControlVtbl);
 
@@ -599,7 +580,7 @@ hook_IMediaControl_Run(IMediaControl* This)
 }
 
 STDMETHODIMP
-hook_IMediaControl_Pause(IMediaControl* This)
+hook_IMediaControl_Pause(IMediaControl *This)
 {
     GET_VTBL(IMediaControlVtbl);
 
@@ -609,7 +590,7 @@ hook_IMediaControl_Pause(IMediaControl* This)
 }
 
 STDMETHODIMP
-hook_IMediaControl_Stop(IMediaControl* This)
+hook_IMediaControl_Stop(IMediaControl *This)
 {
     GET_VTBL(IMediaControlVtbl);
 
@@ -619,7 +600,7 @@ hook_IMediaControl_Stop(IMediaControl* This)
 }
 
 STDMETHODIMP
-hook_IMediaControl_StopWhenReady(IMediaControl* This)
+hook_IMediaControl_StopWhenReady(IMediaControl *This)
 {
     GET_VTBL(IMediaControlVtbl);
 
@@ -630,7 +611,7 @@ hook_IMediaControl_StopWhenReady(IMediaControl* This)
 
 //IGraphBuilder
 STDMETHODIMP
-hook_IGraphBuilder_QueryInterface(IGraphBuilder* This, REFIID riid, void **ppvObject)
+hook_IGraphBuilder_QueryInterface(IGraphBuilder *This, REFIID riid, void **ppvObject)
 {
     GET_VTBL(IGraphBuilderVtbl);
 
@@ -643,17 +624,17 @@ hook_IGraphBuilder_QueryInterface(IGraphBuilder* This, REFIID riid, void **ppvOb
 #endif
 
 ULONG WINAPI
-hook_IGraphBuilder_Release(IGraphBuilder* This)
+hook_IGraphBuilder_Release(IGraphBuilder *This)
 {
     GET_VTBL(IGraphBuilderVtbl);
 
-    free((void*)This->lpVtbl);
+    free((void *)This->lpVtbl);
     This->lpVtbl = vtbl;
     return vtbl->Release(This);
 }
 
 STDMETHODIMP
-hook_IGraphBuilder_RenderFile(IGraphBuilder* This, LPCWSTR lpwstrFile, LPCWSTR lpwstrPlayList)
+hook_IGraphBuilder_RenderFile(IGraphBuilder *This, LPCWSTR lpwstrFile, LPCWSTR lpwstrPlayList)
 {
     GET_VTBL(IGraphBuilderVtbl);
 
@@ -666,7 +647,7 @@ hook_IGraphBuilder_RenderFile(IGraphBuilder* This, LPCWSTR lpwstrFile, LPCWSTR l
 
 //IUnknown
 STDMETHODIMP
-hook_IUnknown_QueryInterface(IUnknown* This, REFIID riid, void **ppvObject)
+hook_IUnknown_QueryInterface(IUnknown *This, REFIID riid, void **ppvObject)
 {
     GET_VTBL(IUnknownVtbl);
 
@@ -681,14 +662,13 @@ hook_IUnknown_QueryInterface(IUnknown* This, REFIID riid, void **ppvObject)
 void
 hook_QueryInterface(REFIID riid, void **ppvObject)
 {
-    if(IsEqualIID(riid, (REFGUID)&IID_IGraphBuilder))
-    {
-        IGraphBuilder* obj = (IGraphBuilder*)*ppvObject;
+    if (IsEqualIID(riid, (REFGUID)&IID_IGraphBuilder)) {
+        IGraphBuilder *obj = (IGraphBuilder *)*ppvObject;
 
         //printf("IGraphBuilder: %p: Create\n", obj);
 
-        IGraphBuilderVtbl* vtbl = malloc(sizeof(IGraphBuilderVtbl) + 4);
-        ((void**)vtbl)[sizeof(IGraphBuilderVtbl)/4] = obj->lpVtbl;
+        IGraphBuilderVtbl *vtbl = malloc(sizeof(IGraphBuilderVtbl) + 4);
+        ((void **)vtbl)[sizeof(IGraphBuilderVtbl)/4] = obj->lpVtbl;
         memcpy(vtbl, obj->lpVtbl, sizeof(IGraphBuilderVtbl));
         obj->lpVtbl = vtbl;
 
@@ -697,14 +677,13 @@ hook_QueryInterface(REFIID riid, void **ppvObject)
         vtbl->RenderFile = hook_IGraphBuilder_RenderFile;
     }
 #if 0
-    else if(IsEqualIID(riid, (REFGUID)&IID_IMediaControl))
-    {
-        IMediaControl* obj = (IMediaControl*)*ppvObject;
+    else if (IsEqualIID(riid, (REFGUID)&IID_IMediaControl)) {
+        IMediaControl *obj = (IMediaControl *)*ppvObject;
 
         printf("IMediaControl: %p: Create\n", obj);
 
-        IMediaControlVtbl* vtbl = malloc(sizeof(IMediaControlVtbl) + 4);
-        ((void**)vtbl)[sizeof(IMediaControlVtbl)/4] = obj->lpVtbl;
+        IMediaControlVtbl *vtbl = malloc(sizeof(IMediaControlVtbl) + 4);
+        ((void **)vtbl)[sizeof(IMediaControlVtbl)/4] = obj->lpVtbl;
         memcpy(vtbl, obj->lpVtbl, sizeof(IMediaControlVtbl));
         obj->lpVtbl = vtbl;
 
@@ -714,15 +693,13 @@ hook_QueryInterface(REFIID riid, void **ppvObject)
         vtbl->Pause = hook_IMediaControl_Pause;
         vtbl->Stop = hook_IMediaControl_Stop;
         vtbl->StopWhenReady = hook_IMediaControl_StopWhenReady;
-    }
-    else if(IsEqualIID(riid, (REFGUID)&IID_IBasicAudio))
-    {
-        IBasicAudio* obj = (IBasicAudio*)*ppvObject;
+    } else if (IsEqualIID(riid, (REFGUID)&IID_IBasicAudio)) {
+        IBasicAudio *obj = (IBasicAudio *)*ppvObject;
 
         printf("IBasicAudio: %p: Create\n", obj);
 
-        IBasicAudioVtbl* vtbl = malloc(sizeof(IBasicAudioVtbl) + 4);
-        ((void**)vtbl)[sizeof(IBasicAudioVtbl)/4] = obj->lpVtbl;
+        IBasicAudioVtbl *vtbl = malloc(sizeof(IBasicAudioVtbl) + 4);
+        ((void **)vtbl)[sizeof(IBasicAudioVtbl)/4] = obj->lpVtbl;
         memcpy(vtbl, obj->lpVtbl, sizeof(IBasicAudioVtbl));
         obj->lpVtbl = vtbl;
 
@@ -732,15 +709,13 @@ hook_QueryInterface(REFIID riid, void **ppvObject)
         vtbl->get_Volume = hook_IBasicAudio_get_Volume;
         vtbl->put_Balance = hook_IBasicAudio_put_Balance;
         vtbl->put_Volume = hook_IBasicAudio_put_Volume;
-    }
-    else if(IsEqualIID(riid, (REFGUID)&IID_IMediaEventEx))
-    {
-        IMediaEventEx* obj = (IMediaEventEx*)*ppvObject;
+    } else if (IsEqualIID(riid, (REFGUID)&IID_IMediaEventEx)) {
+        IMediaEventEx *obj = (IMediaEventEx *)*ppvObject;
 
         printf("IMediaEventEx: %p: Create\n", obj);
 
-        IMediaEventExVtbl* vtbl = malloc(sizeof(IMediaEventExVtbl) + 4);
-        ((void**)vtbl)[sizeof(IMediaEventExVtbl)/4] = obj->lpVtbl;
+        IMediaEventExVtbl *vtbl = malloc(sizeof(IMediaEventExVtbl) + 4);
+        ((void **)vtbl)[sizeof(IMediaEventExVtbl)/4] = obj->lpVtbl;
         memcpy(vtbl, obj->lpVtbl, sizeof(IMediaEventExVtbl));
         obj->lpVtbl = vtbl;
 
@@ -751,11 +726,11 @@ hook_QueryInterface(REFIID riid, void **ppvObject)
 }
 
 ULONG WINAPI
-hook_IUnknown_Release(IUnknown* This)
+hook_IUnknown_Release(IUnknown *This)
 {
     GET_VTBL(IUnknownVtbl);
 
-    free((void*)This->lpVtbl);
+    free((void *)This->lpVtbl);
     This->lpVtbl = vtbl;
     return vtbl->Release(This);
 }
@@ -766,14 +741,12 @@ hook_CoCreateInstance(REFCLSID rclsid, LPUNKNOWN pUnkOuter, DWORD dwClsContext, 
 {
     HRESULT result = CoCreateInstance(rclsid, pUnkOuter, dwClsContext, riid, ppv);
 
-    if(IsEqualIID(riid, (REFIID)&IID_IDirectDraw7))
-    {
+    if (IsEqualIID(riid, (REFIID)&IID_IDirectDraw7)) {
         printf("directdraw\n");
     }
 
     //Do we need to hook this?
-    /*if(IsEqualCLSID(rclsid, (REFGUID)&CLSID_FilterGraph))
-    {
+    /*if (IsEqualCLSID(rclsid, (REFGUID)&CLSID_FilterGraph)) {
         IUnknown* obj = (IUnknown*)*ppv;
 
         IUnknownVtbl* vtbl = malloc(sizeof(IUnknownVtbl) + 4);
@@ -792,19 +765,17 @@ hook_CoCreateInstance(REFCLSID rclsid, LPUNKNOWN pUnkOuter, DWORD dwClsContext, 
 //---------
 //HOOKING
 //---------
-typedef struct
-{
-    const char* name;
-    void* funcHook;
-    void* funcOrig;
+typedef struct {
+    const char *name;
+    void *funcHook;
+    void *funcOrig;
 } Hook;
 
 #define MODULE(name)    {#name "32.dll", NULL, NULL},
 #define HOOK(name)      {#name, hook_##name, NULL},
 
 #define HOOK_MAX (sizeof(hooks) / sizeof(hooks[0]))
-Hook hooks[] =
-{
+Hook hooks[] = {
     MODULE(kernel)
 #ifdef HOOK_LANG
     HOOK(GetCPInfo)
@@ -865,63 +836,57 @@ Hook hooks[] =
 
 #define MAKE_POINTER(cast, ptr, offset) (cast)((DWORD)(ptr)+(DWORD)(offset))
 
-BOOL
-hook()
+BOOL hook()
 {
     //Initialize original function addresses
     HMODULE module = NULL;
     int i, j;
-    for(i = 0; i < HOOK_MAX; i++)
-    {
-        if(hooks[i].funcHook)
-            hooks[i].funcOrig = (void*)GetProcAddress(module, hooks[i].name);
+    for (i = 0; i < HOOK_MAX; i++) {
+        if (hooks[i].funcHook)
+            hooks[i].funcOrig = (void *)GetProcAddress(module, hooks[i].name);
         else
             module = GetModuleHandleA(hooks[i].name);
     }
 
     //Check DOS Header
     PIMAGE_DOS_HEADER dos = (PIMAGE_DOS_HEADER)GetModuleHandleA(NULL);
-    if(dos->e_magic != IMAGE_DOS_SIGNATURE)
+    if (dos->e_magic != IMAGE_DOS_SIGNATURE)
         return FALSE;
 
     //Check NT Header
     PIMAGE_NT_HEADERS nt = MAKE_POINTER(PIMAGE_NT_HEADERS, dos, dos->e_lfanew);
-    if(nt->Signature != IMAGE_NT_SIGNATURE)
+    if (nt->Signature != IMAGE_NT_SIGNATURE)
         return FALSE;
 
     //Check import module table
     PIMAGE_IMPORT_DESCRIPTOR modules = MAKE_POINTER(PIMAGE_IMPORT_DESCRIPTOR, dos, nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
-    if(modules == (PIMAGE_IMPORT_DESCRIPTOR)nt)
+    if (modules == (PIMAGE_IMPORT_DESCRIPTOR)nt)
         return FALSE;
 
     //Find the correct module
-    while(modules->Name)
-    {
-        const char* szModule = MAKE_POINTER(const char*, dos, modules->Name);
+    while (modules->Name) {
+        const char *szModule = MAKE_POINTER(const char *, dos, modules->Name);
 
-        for(i = 0; i < HOOK_MAX; i++)
-        {
-            if(!hooks[i].funcHook && !strcasecmp(hooks[i].name, szModule))
+        for (i = 0; i < HOOK_MAX; i++) {
+            if (!hooks[i].funcHook && !strcasecmp(hooks[i].name, szModule))
                 break;
         }
 
-        if(i < HOOK_MAX)
-        {
+        if (i < HOOK_MAX) {
             //Find the correct function
             PIMAGE_THUNK_DATA thunk = MAKE_POINTER(PIMAGE_THUNK_DATA, dos, modules->FirstThunk);
-            while(thunk->u1.Function)
-            {
-                for(j = i + 1; j < HOOK_MAX && hooks[j].funcHook; j++)
-                {
-                    if(thunk->u1.Function == (DWORD)hooks[j].funcOrig)
-                    {
+            while (thunk->u1.Function) {
+                for (j = i + 1; j < HOOK_MAX && hooks[j].funcHook; j++) {
+                    if (thunk->u1.Function == (DWORD)hooks[j].funcOrig) {
                         //Overwrite
                         DWORD flags;
-                        if(!VirtualProtect(&thunk->u1.Function, sizeof(thunk->u1.Function), PAGE_READWRITE, &flags))
+                        if (!VirtualProtect(&thunk->u1.Function, sizeof(thunk->u1.Function), PAGE_READWRITE, &flags)) {
                             return FALSE;
+                        }
                         thunk->u1.Function = (DWORD)hooks[j].funcHook;
-                        if(!VirtualProtect(&thunk->u1.Function, sizeof(thunk->u1.Function), flags, &flags))
+                        if (!VirtualProtect(&thunk->u1.Function, sizeof(thunk->u1.Function), flags, &flags)) {
                             return FALSE;
+                        }
                     }
                 }
                 thunk++;
@@ -935,225 +900,210 @@ hook()
 HMODULE kernel32 = NULL;
 
 //Entry point
-BOOL WINAPI
-DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
+BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
-    switch(fdwReason)
-    {
-        case DLL_PROCESS_ATTACH:
-        {
-            dll_hInstance = hinstDLL;
+    switch (fdwReason) {
+    case DLL_PROCESS_ATTACH: {
+        dll_hInstance = hinstDLL;
 
-            //Get the location of RPG_RT.exe
-            unsigned int size = 1;
-            for(;;)
-            {
-                szDataPath = (WCHAR*)malloc(size * sizeof(WCHAR));
-                if(GetModuleFileNameW(NULL, szDataPath, size) < size)
-                    break;
-                free(szDataPath);
-                size *= 2;
-            }
-            PathRemoveFileSpecW(szDataPath);
-            PathAddBackslashW(szDataPath);
+        //Get the location of RPG_RT.exe
+        unsigned int size = 1;
+        for (;;) {
+            szDataPath = (WCHAR *)malloc(size * sizeof(WCHAR));
+            if (GetModuleFileNameW(NULL, szDataPath, size) < size)
+                break;
+            free(szDataPath);
+            size *= 2;
+        }
+        PathRemoveFileSpecW(szDataPath);
+        PathAddBackslashW(szDataPath);
 
-            //Construct the close bat path/write it
-            GetTempPathW(MAX_PATH, szBatPath);
-            wcscat(szBatPath, L"oneshot.bat");
-            FILE* f = _wfopen(szBatPath, L"wt");
-            fwprintf(f, L"@echo off\n:loop\nrmdir /s /q \"%ls\"\nif exist \"%ls\" goto loop\ndel /f /q \"%ls\"", szDataPath, szDataPath, szBatPath);
-            fclose(f);
+        //Construct the close bat path/write it
+        GetTempPathW(MAX_PATH, szBatPath);
+        wcscat(szBatPath, L"oneshot.bat");
+        FILE *f = _wfopen(szBatPath, L"wt");
+        fwprintf(f, L"@echo off\n:loop\nrmdir /s /q \"%ls\"\nif exist \"%ls\" goto loop\ndel /f /q \"%ls\"", szDataPath, szDataPath, szBatPath);
+        fclose(f);
 
-            //Random
-            srand(time(NULL));
+        //Random
+        srand(time(NULL));
 
-            //Get the host os!
-            kernel32 = LoadLibraryA("kernel32.dll");
-            if(!kernel32)
+        //Get the host os!
+        kernel32 = LoadLibraryA("kernel32.dll");
+        if (!kernel32) {
+            return FALSE;
+        }
+        wine_get_unix_file_name = (void *)GetProcAddress(kernel32, "wine_get_unix_file_name");
+
+        if (wine_get_unix_file_name) {
+            winver = WIN_WINE;
+
+            //Create the shell command
+
+            //Get the unix path of func.sh
+            LPWSTR szFuncPath = _aswprintf(L"%lsfunc.sh", szDataPath);
+            char *szFuncPathUnix8 = wine_get_unix_file_name(szFuncPath);
+            LPWSTR szFuncPathUnix = util_getUnicodeCP(szFuncPathUnix8, CP_UTF8);
+            HeapFree(GetProcessHeap(), 0, szFuncPathUnix8);
+            free(szFuncPath);
+
+            szFuncCmd = _aswprintf(L"/bin/bash \"%ls\"", szFuncPathUnix);
+            free(szFuncPathUnix);
+
+            //Construct return and rc paths
+            szRcPath = _aswprintf(L"%lsrc", szDataPath);
+            szReturnPath = _aswprintf(L"%lsreturn", szDataPath);
+
+            //Get the config path
+            util_sh(L"home");
+            LPWSTR szConfigPath = util_sh_return();
+
+            //Construct ending and save paths
+            szEndingPath = _aswprintf(L"%ls\\ending", szConfigPath);
+            szSavePath = _aswprintf(L"%ls\\save", szConfigPath);
+            free(szConfigPath);
+        } else {
+            //Construct the save path, create directory
+            szSavePath = malloc((MAX_PATH + 13) * 2);
+            if (SHGetFolderPathW(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, szSavePath) != S_OK) {
                 return FALSE;
-            wine_get_unix_file_name = (void*)GetProcAddress(kernel32, "wine_get_unix_file_name");
-
-            if(wine_get_unix_file_name)
-            {
-                winver = WIN_WINE;
-
-                //Create the shell command
-
-                //Get the unix path of func.sh
-                LPWSTR szFuncPath = _aswprintf(L"%lsfunc.sh", szDataPath);
-                char* szFuncPathUnix8 = wine_get_unix_file_name(szFuncPath);
-                LPWSTR szFuncPathUnix = util_getUnicodeCP(szFuncPathUnix8, CP_UTF8);
-                HeapFree(GetProcessHeap(), 0, szFuncPathUnix8);
-                free(szFuncPath);
-
-                szFuncCmd = _aswprintf(L"/bin/bash \"%ls\"", szFuncPathUnix);
-                free(szFuncPathUnix);
-
-                //Construct return and rc paths
-                szRcPath = _aswprintf(L"%lsrc", szDataPath);
-                szReturnPath = _aswprintf(L"%lsreturn", szDataPath);
-
-                //Get the config path
-                util_sh(L"home");
-                LPWSTR szConfigPath = util_sh_return();
-
-                //Construct ending and save paths
-                szEndingPath = _aswprintf(L"%ls\\ending", szConfigPath);
-                szSavePath = _aswprintf(L"%ls\\save", szConfigPath);
-                free(szConfigPath);
             }
-            else
-            {
-                //Construct the save path, create directory
-                szSavePath = malloc((MAX_PATH + 13) * 2);
-                if(SHGetFolderPathW(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, szSavePath) != S_OK)
-                    return FALSE;
-                wcscat(szSavePath, L"\\Oneshot");
-                CreateDirectoryW(szSavePath, NULL);
-                wcscat(szSavePath, L"\\save");
+            wcscat(szSavePath, L"\\Oneshot");
+            CreateDirectoryW(szSavePath, NULL);
+            wcscat(szSavePath, L"\\save");
 
-                //What version of windows is this?
-                OSVERSIONINFOW version;
-                version.dwOSVersionInfoSize = sizeof(version);
-                if(GetVersionExW(&version))
-                {
-                    switch(version.dwMajorVersion)
-                    {
-                    case 5:
-                        switch(version.dwMinorVersion)
-                        {
-                        case 1:
-                            winver = WIN_XP;
-                            break;
-                        default:
-                            winver = WIN_UNSUPPORTED;
-                            break;
-                        }
+            //What version of windows is this?
+            OSVERSIONINFOW version;
+            version.dwOSVersionInfoSize = sizeof(version);
+            if (GetVersionExW(&version)) {
+                switch (version.dwMajorVersion) {
+                case 5:
+                    switch (version.dwMinorVersion) {
+                    case 1:
+                        winver = WIN_XP;
                         break;
-                    case 6:
-                        switch(version.dwMinorVersion)
-                        {
-                        case 0:
-                            winver = WIN_VISTA;
-                            break;
-                        case 1:
-                            winver = WIN_7;
-                            break;
-                        case 2:
-                            winver = WIN_8;
-                            break;
-                        case 3:
-                            winver = WIN_8_1;
-                            break;
-                        default:
-                            winver = WIN_FUTURE;
-                            break;
-                        }
+                    default:
+                        winver = WIN_UNSUPPORTED;
+                        break;
+                    }
+                    break;
+                case 6:
+                    switch (version.dwMinorVersion) {
+                    case 0:
+                        winver = WIN_VISTA;
+                        break;
+                    case 1:
+                        winver = WIN_7;
+                        break;
+                    case 2:
+                        winver = WIN_8;
+                        break;
+                    case 3:
+                        winver = WIN_8_1;
                         break;
                     default:
                         winver = WIN_FUTURE;
                         break;
                     }
+                    break;
+                default:
+                    winver = WIN_FUTURE;
+                    break;
                 }
             }
+        }
 
-            //Read the ending
-            ending = util_loadEnding();
+        //Read the ending
+        ending = util_loadEnding();
 
-            //Get the document path
-            if(winver == WIN_WINE)
-            {
-                util_sh(L"documents");
-                LPWSTR buff = util_sh_return();
-                szDocumentPath = _aswprintf(L"%ls\\" DOCUMENT_NAME, buff);
-                free(buff);
+        //Get the document path
+        if (winver == WIN_WINE) {
+            util_sh(L"documents");
+            LPWSTR buff = util_sh_return();
+            szDocumentPath = _aswprintf(L"%ls\\" DOCUMENT_NAME, buff);
+            free(buff);
 
-                util_sh(L"desktop");
-                buff = util_sh_return();
-                szDesktopPath = _aswprintf(L"%ls\\" WALLPAPER_NAME, buff);
-                free(buff);
-            }
-            else
-            {
-                WCHAR buff[MAX_PATH];
-                if(SHGetFolderPathW(NULL, CSIDL_PERSONAL, NULL, 0, buff) != S_OK)
-                    return FALSE;
-                szDocumentPath = _aswprintf(L"%ls\\" DOCUMENT_NAME, buff);
-
-                if(SHGetFolderPathW(NULL, CSIDL_DESKTOP, NULL, 0, buff) != S_OK)
-                    return FALSE;
-                szDesktopPath = _aswprintf(L"%ls\\" WALLPAPER_NAME, buff);
-            }
-
-            //Make sure the document doesn't exist, by unlikely
-            //coincidence
-            /*DWORD attrib = GetFileAttributesW(szDocumentPath);
-            if(attrib != INVALID_FILE_ATTRIBUTES)
-            {
-                LPWSTR msg = _aswprintf(L"Please move or rename the file \"%ls\" in order to run the game properly!", szDocumentPath);
-                MessageBoxW(NULL, msg, L"Error", MB_ICONERROR);
-                free(msg);
+            util_sh(L"desktop");
+            buff = util_sh_return();
+            szDesktopPath = _aswprintf(L"%ls\\" WALLPAPER_NAME, buff);
+            free(buff);
+        } else {
+            WCHAR buff[MAX_PATH];
+            if (SHGetFolderPathW(NULL, CSIDL_PERSONAL, NULL, 0, buff) != S_OK)
                 return FALSE;
-            }*/
+            szDocumentPath = _aswprintf(L"%ls\\" DOCUMENT_NAME, buff);
 
-            if(ending == ENDING_ESCAPED)
-            {
-                util_messagebox(STR_GONE, L"Fatal Error", MESSAGE_ERROR);
+            if (SHGetFolderPathW(NULL, CSIDL_DESKTOP, NULL, 0, buff) != S_OK)
                 return FALSE;
-            }
+            szDesktopPath = _aswprintf(L"%ls\\" WALLPAPER_NAME, buff);
+        }
+
+        //Make sure the document doesn't exist, by unlikely
+        //coincidence
+        /*DWORD attrib = GetFileAttributesW(szDocumentPath);
+        if (attrib != INVALID_FILE_ATTRIBUTES) {
+            LPWSTR msg = _aswprintf(L"Please move or rename the file \"%ls\" in order to run the game properly!", szDocumentPath);
+            MessageBoxW(NULL, msg, L"Error", MB_ICONERROR);
+            free(msg);
+            return FALSE;
+        }*/
+
+        if (ending == ENDING_ESCAPED) {
+            util_messagebox(STR_GONE, L"Fatal Error", MESSAGE_ERROR);
+            return FALSE;
+        }
 #if defined FONT_EMBED
-            //Add font to table
-            szFontPath = _aswprintf(L"%ls" FONT_FILE, szDataPath);
-            AddFontResourceW(szFontPath);
+        //Add font to table
+        szFontPath = _aswprintf(L"%ls" FONT_FILE, szDataPath);
+        AddFontResourceW(szFontPath);
 #elif defined FONT_LOOKUP
-            //Determine font to use for text (non-english only)
-            HDC dc = GetDC(NULL);
-            LOGFONTA lf = {0};
-            EnumFontFamiliesExA(dc, &lf, callback_font, 0, 0);
-            ReleaseDC(NULL, dc);
+        //Determine font to use for text (non-english only)
+        HDC dc = GetDC(NULL);
+        LOGFONTA lf = {0};
+        EnumFontFamiliesExA(dc, &lf, callback_font, 0, 0);
+        ReleaseDC(NULL, dc);
 #endif
 
-            return hook();
-        }
-        break;
+        return hook();
+    }
+    break;
 
-        case DLL_PROCESS_DETACH:
-        {
-            //Save the ending here in case the game is abnormally terminated
-            util_saveEnding();
+    case DLL_PROCESS_DETACH: {
+        //Save the ending here in case the game is abnormally terminated
+        util_saveEnding();
 
-            wndKitty_destroy();
+        wndKitty_destroy();
 
 #if defined FONT_EMBED
-            RemoveFontResourceW(szFontPath);
-            free(szFontPath);
+        RemoveFontResourceW(szFontPath);
+        free(szFontPath);
 #endif
-            free(szFuncCmd);
-            free(szDataPath);
-            free(szRcPath);
-            free(szReturnPath);
-            free(szEndingPath);
-            free(szSavePath);
+        free(szFuncCmd);
+        free(szDataPath);
+        free(szRcPath);
+        free(szReturnPath);
+        free(szEndingPath);
+        free(szSavePath);
 
-            free(szDocumentPath);
-            free(szDesktopPath);
+        free(szDocumentPath);
+        free(szDesktopPath);
 
-            free(szOggOld);
-            ogg_free();
+        free(szOggOld);
+        ogg_free();
 
-            wallpaper_free(&wallpaperOld);
+        wallpaper_free(&wallpaperOld);
 
-            FreeLibrary(kernel32);
+        FreeLibrary(kernel32);
 
-            //Delete ourself
-            STARTUPINFOW si = {0};
-            PROCESS_INFORMATION pi = {0};
-            si.cb = sizeof(si);
-            CreateProcessW(NULL, szBatPath, NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi);
-            CloseHandle(pi.hThread);
-            CloseHandle(pi.hProcess);
-        }
-        break;
+        //Delete ourself
+        STARTUPINFOW si = {0};
+        PROCESS_INFORMATION pi = {0};
+        si.cb = sizeof(si);
+        CreateProcessW(NULL, szBatPath, NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi);
+        CloseHandle(pi.hThread);
+        CloseHandle(pi.hProcess);
+    }
+    break;
     case DLL_THREAD_ATTACH:
         break;
     case DLL_THREAD_DETACH:

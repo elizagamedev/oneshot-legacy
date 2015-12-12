@@ -3,7 +3,7 @@
 
 #include "globals.h"
 
-extern void (* const funcs[])(void);
+extern void (*const funcs[])(void);
 
 void func_init();
 

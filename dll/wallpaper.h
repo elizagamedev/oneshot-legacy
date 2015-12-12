@@ -3,8 +3,7 @@
 
 #include "globals.h"
 
-typedef enum
-{
+typedef enum {
     STYLE_NONE,
     STYLE_CENTER,
     STYLE_TILE,
@@ -14,8 +13,7 @@ typedef enum
     STYLE_SPAN,
 } WallpaperStyle;
 
-typedef enum
-{
+typedef enum {
     SHADING_SOLID,
     SHADING_VERTICAL,
     SHADING_HORIZONTAL,
@@ -24,8 +22,7 @@ typedef enum
 //There are two possibilities for representing the wallpaper:
 //As a filename or as RGB data.
 
-typedef struct
-{
+typedef struct {
     LPWSTR filename;
     WallpaperStyle style;
     WallpaperShading shading;
@@ -33,10 +30,10 @@ typedef struct
     unsigned int colorSecondary;
 } Wallpaper;
 
-void wallpaper_get(Wallpaper* wallpaper);
-BOOL wallpaper_set(Wallpaper* wallpaper);
-void wallpaper_gen(Wallpaper* wallpaper, int width, int height, unsigned char* pixels);
-void wallpaper_free(Wallpaper* wallpaper);
+void wallpaper_get(Wallpaper *wallpaper);
+BOOL wallpaper_set(Wallpaper *wallpaper);
+void wallpaper_gen(Wallpaper *wallpaper, int width, int height, unsigned char *pixels);
+void wallpaper_free(Wallpaper *wallpaper);
 
 //This is the user's wallpaper before we switch it
 extern Wallpaper wallpaperOld;

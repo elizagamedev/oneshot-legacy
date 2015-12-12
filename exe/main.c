@@ -13,44 +13,42 @@
 #define STR_ERROR L"Could not start RPG_RT.exe."
 #endif
 
-wchar_t*
-_aswprintf(const wchar_t* fmt, ...)
+wchar_t *_aswprintf(const wchar_t *fmt, ...)
 {
     va_list va_args;
     va_start(va_args, fmt);
     int size = _vscwprintf(fmt, va_args) + 1;
-    wchar_t* dst = malloc(size * 2);
+    wchar_t *dst = malloc(size * 2);
     vsnwprintf(dst, size, fmt, va_args);
     va_end(va_args);
     return dst;
 }
 
-BOOL
-writeResource(HINSTANCE hInstance, const char* name, LPWSTR filename, BOOL decrypt)
+BOOL writeResource(HINSTANCE hInstance, const char *name, LPWSTR filename, BOOL decrypt)
 {
     HGLOBAL hRes = NULL;
     HRSRC res;
 
     res = FindResourceA(hInstance, name, RT_RCDATA);
-    if(!res)
+    if (!res)
         return TRUE;
-    if(!(hRes = LoadResource(NULL, res)))
+    if (!(hRes = LoadResource(NULL, res)))
         return TRUE;
 
-    unsigned char* data = (unsigned char*)LockResource(hRes);
+    unsigned char *data = (unsigned char *)LockResource(hRes);
     size_t size = (size_t)SizeofResource(NULL, res);
 
-    FILE* f = _wfopen(filename, L"wb");
-    if(!f)
+    FILE *f = _wfopen(filename, L"wb");
+    if (!f)
         return TRUE;
-    if(decrypt)
-    {
+    if (decrypt) {
         int i = 0;
-        for(; i < size; i++)
+        for (; i < size; i++) {
             fputc(data[i] ^ key[i % KEY_SIZE], f);
-    }
-    else
+        }
+    } else {
         fwrite(data, size, 1, f);
+    }
     fclose(f);
 
     return FALSE;
@@ -67,8 +65,7 @@ writeResource(HINSTANCE hInstance, const char* name, LPWSTR filename, BOOL decry
 #define TEMP_PATH_UNIX L"Z:\\tmp\\"
 #define TEMP_PATH L"Oneshot\\"
 
-int CALLBACK
-WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
     int code = 0;
 
@@ -79,9 +76,9 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdS
     memset(&pi, 0, sizeof(pi));
     si.cb = sizeof(si);
 
-    void* szDllPathRemote = NULL;
+    void *szDllPathRemote = NULL;
     HMODULE kernel32 = NULL;
-    void* pLoadLibraryW = NULL;
+    void *pLoadLibraryW = NULL;
     HANDLE thread = NULL;
 
     LPWSTR szTempPath = NULL;
@@ -89,10 +86,9 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdS
     //Get this program's path and module name
     unsigned int size = 1;
     LPWSTR szGamePath;
-    for(;;)
-    {
-        szGamePath = (WCHAR*)malloc(size * sizeof(WCHAR));
-        if(GetModuleFileNameW(NULL, szGamePath, size) < size)
+    for (;;) {
+        szGamePath = (WCHAR *)malloc(size * sizeof(WCHAR));
+        if (GetModuleFileNameW(NULL, szGamePath, size) < size)
             break;
         free(szGamePath);
         size *= 2;
@@ -108,18 +104,15 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdS
 
     //Construct the temporary file directory path
     kernel32 = LoadLibraryW(L"kernel32.dll");
-    if(!kernel32)
+    if (!kernel32)
         goto err;
 
-    if(GetProcAddress(kernel32, "wine_get_unix_file_name"))
-    {
+    if (GetProcAddress(kernel32, "wine_get_unix_file_name")) {
         //Hack? fix this later to use a wine function, maybe
         szTempPath = malloc((STRLEN(TEMP_PATH_UNIX TEMP_PATH) + 2) * sizeof(WCHAR));
         wcscpy(szTempPath, TEMP_PATH_UNIX TEMP_PATH);
         szTempPath[STRLEN(TEMP_PATH_UNIX TEMP_PATH)+1] = 0; //Double null-terminate
-    }
-    else
-    {
+    } else {
         WCHAR szTempPathRaw[MAX_PATH];
         int sizeTempPathRaw = GetTempPathW(MAX_PATH, szTempPathRaw);
         int sizeTempPath = sizeTempPathRaw + STRLEN(TEMP_PATH);
@@ -142,20 +135,20 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdS
 
     //Write the embedded data to the HDD
     SHCreateDirectoryExW(NULL, szTempPath, NULL);
-    if(writeResource(hInstance, "HOOK_DLL", szDllPath, TRUE))
+    if (writeResource(hInstance, "HOOK_DLL", szDllPath, TRUE))
         goto err;
-    if(writeResource(hInstance, "RPG_RT_EXE", szExePath, TRUE))
+    if (writeResource(hInstance, "RPG_RT_EXE", szExePath, TRUE))
         goto err;
-    if(writeResource(hInstance, "FUNC_SH", szFuncPath, FALSE))
+    if (writeResource(hInstance, "FUNC_SH", szFuncPath, FALSE))
         goto err;
-    if(writeResource(hInstance, "SNDFILE_DLL", szSndfilePath, TRUE))
+    if (writeResource(hInstance, "SNDFILE_DLL", szSndfilePath, TRUE))
         goto err;
-    if(writeResource(hInstance, "PAPER_32", szPaper32Path, FALSE))
+    if (writeResource(hInstance, "PAPER_32", szPaper32Path, FALSE))
         goto err;
-    if(writeResource(hInstance, "PAPER_64", szPaper64Path, FALSE))
+    if (writeResource(hInstance, "PAPER_64", szPaper64Path, FALSE))
         goto err;
 #ifdef FONT_FILE
-    if(writeResource(hInstance, "FONTFONT", szFontPath, FALSE))
+    if (writeResource(hInstance, "FONTFONT", szFontPath, FALSE))
         goto err;
 #endif
 
@@ -164,32 +157,31 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdS
 
     //Spawn the RPG_RT.exe process and inject
 
-    if(!CreateProcessW(NULL, szExePath, 0, 0, FALSE, CREATE_SUSPENDED, NULL, szGamePath, &si, &pi))
+    if (!CreateProcessW(NULL, szExePath, 0, 0, FALSE, CREATE_SUSPENDED, NULL, szGamePath, &si, &pi))
         goto err;
 
     int sizeDllPath = (wcslen(szDllPath) + 1) * 2;
-    if(!(szDllPathRemote = VirtualAllocEx(pi.hProcess, NULL, sizeDllPath, MEM_COMMIT, PAGE_READWRITE)))
+    if (!(szDllPathRemote = VirtualAllocEx(pi.hProcess, NULL, sizeDllPath, MEM_COMMIT, PAGE_READWRITE)))
         goto err;
 
-    if(!WriteProcessMemory(pi.hProcess, szDllPathRemote, szDllPath, sizeDllPath, NULL))
+    if (!WriteProcessMemory(pi.hProcess, szDllPathRemote, szDllPath, sizeDllPath, NULL))
         goto err;
 
-    if(!(pLoadLibraryW = GetProcAddress(kernel32, "LoadLibraryW")))
+    if (!(pLoadLibraryW = GetProcAddress(kernel32, "LoadLibraryW")))
         goto err;
 
-    if(!(thread = CreateRemoteThread(pi.hProcess, NULL, 0, pLoadLibraryW, szDllPathRemote, 0, NULL)))
+    if (!(thread = CreateRemoteThread(pi.hProcess, NULL, 0, pLoadLibraryW, szDllPathRemote, 0, NULL)))
         goto err;
 
     WaitForSingleObject(thread, INFINITE);
 
     DWORD codeRemote;
-    if(GetExitCodeThread(thread, &codeRemote))
-    {
-        if(codeRemote == 0)
+    if (GetExitCodeThread(thread, &codeRemote)) {
+        if (codeRemote == 0)
             goto err;
-    }
-    else
+    } else {
         goto err;
+    }
 
     goto done;
 
@@ -199,16 +191,15 @@ err:
 
 done:
     //Cleanup
-    if(thread)
+    if (thread)
         CloseHandle(thread);
-    if(kernel32)
+    if (kernel32)
         FreeLibrary(kernel32);
-    if(szDllPathRemote)
+    if (szDllPathRemote)
         VirtualFreeEx(pi.hProcess, szDllPathRemote, 0, MEM_RELEASE);
 
-    if(code)
-    {
-        if(pi.hProcess)
+    if (code) {
+        if (pi.hProcess)
             TerminateProcess(pi.hProcess, 1);
         SHFILEOPSTRUCTW opts;
         memset(&opts, 0, sizeof(opts));
@@ -216,13 +207,13 @@ done:
         opts.fFlags = FOF_SILENT | FOF_NOCONFIRMATION;
         opts.pFrom = szTempPath;
         SHFileOperationW(&opts);
-    }
-    else
+    } else {
         ResumeThread(pi.hThread);
+    }
 
-    if(pi.hThread)
+    if (pi.hThread)
         CloseHandle(pi.hThread);
-    if(pi.hProcess)
+    if (pi.hProcess)
         CloseHandle(pi.hProcess);
 
 //  MessageBoxW(NULL, L"here", L"", 0);

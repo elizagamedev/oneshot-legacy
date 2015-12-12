@@ -7,19 +7,16 @@
 static sf_count_t wav_size = 0;
 static sf_count_t wav_pos = 0;
 static int wav_data_nAllocs = 0;
-static void** wav_data = NULL;
+static void **wav_data = NULL;
 
-sf_count_t
-wav_vio_filelen(void* data)
+sf_count_t wav_vio_filelen(void *data)
 {
     return wav_size;
 }
 
-sf_count_t
-wav_vio_seek(sf_count_t offset, int whence, void* data)
+sf_count_t wav_vio_seek(sf_count_t offset, int whence, void *data)
 {
-    switch(whence)
-    {
+    switch (whence) {
     case SEEK_CUR:
         return (wav_pos += offset);
     case SEEK_SET:
@@ -30,21 +27,19 @@ wav_vio_seek(sf_count_t offset, int whence, void* data)
     return 0;
 }
 
-sf_count_t
-wav_vio_read(void* ptr, sf_count_t count, void* data)
+sf_count_t wav_vio_read(void *ptr, sf_count_t count, void *data)
 {
     sf_count_t max;
-    if(wav_pos + count > wav_size)
+    if (wav_pos + count > wav_size)
         max = wav_size - wav_pos;
     else
         max = count;
 
     sf_count_t nRead = 0;
 
-    while(nRead < max)
-    {
+    while (nRead < max) {
         int blkmax = SIZE_BLOCK_BUFFER - wav_pos % SIZE_BLOCK_BUFFER;
-        if(wav_pos + blkmax > max)
+        if (wav_pos + blkmax > max)
             blkmax = max - wav_pos;
         memcpy(ptr + nRead, wav_data[wav_pos / SIZE_BLOCK_BUFFER] + wav_pos % SIZE_BLOCK_BUFFER, blkmax);
         wav_pos += blkmax;
@@ -53,35 +48,31 @@ wav_vio_read(void* ptr, sf_count_t count, void* data)
     return nRead;
 }
 
-sf_count_t
-wav_vio_write(const void* ptr, sf_count_t count, void* data)
+sf_count_t wav_vio_write(const void *ptr, sf_count_t count, void *data)
 {
-    if(wav_pos + count > wav_size)
+    if (wav_pos + count > wav_size)
         wav_size = wav_pos + count;
 
-    if(!wav_data)
-    {
-        wav_data = malloc(SIZE_POINTER_BUFFER * sizeof(void*));
-        memset(wav_data, 0, SIZE_POINTER_BUFFER * sizeof(void*));
+    if (!wav_data) {
+        wav_data = malloc(SIZE_POINTER_BUFFER * sizeof(void *));
+        memset(wav_data, 0, SIZE_POINTER_BUFFER * sizeof(void *));
         wav_data_nAllocs = 1;
     }
 
-    while(wav_size / SIZE_BLOCK_BUFFER >= SIZE_POINTER_BUFFER * wav_data_nAllocs)
-    {
-        wav_data = realloc(wav_data, SIZE_POINTER_BUFFER * (wav_data_nAllocs + 1) * sizeof(void*));
-        memset(&wav_data[SIZE_POINTER_BUFFER * wav_data_nAllocs], 0, SIZE_POINTER_BUFFER * sizeof(void*));
+    while (wav_size / SIZE_BLOCK_BUFFER >= SIZE_POINTER_BUFFER * wav_data_nAllocs) {
+        wav_data = realloc(wav_data, SIZE_POINTER_BUFFER * (wav_data_nAllocs + 1) * sizeof(void *));
+        memset(&wav_data[SIZE_POINTER_BUFFER * wav_data_nAllocs], 0, SIZE_POINTER_BUFFER * sizeof(void *));
         wav_data_nAllocs++;
     }
 
     sf_count_t nWritten = 0;
 
-    while(nWritten < count)
-    {
-        if(!wav_data[wav_pos / SIZE_BLOCK_BUFFER])
+    while (nWritten < count) {
+        if (!wav_data[wav_pos / SIZE_BLOCK_BUFFER])
             wav_data[wav_pos / SIZE_BLOCK_BUFFER] = malloc(SIZE_BLOCK_BUFFER);
 
         int blkmax = SIZE_BLOCK_BUFFER - wav_pos % SIZE_BLOCK_BUFFER;
-        if(blkmax > wav_size - wav_pos)
+        if (blkmax > wav_size - wav_pos)
             blkmax = wav_size - wav_pos;
         memcpy(wav_data[wav_pos / SIZE_BLOCK_BUFFER] + wav_pos % SIZE_BLOCK_BUFFER, ptr + nWritten, blkmax);
         wav_pos += blkmax;
@@ -90,14 +81,12 @@ wav_vio_write(const void* ptr, sf_count_t count, void* data)
     return count;
 }
 
-sf_count_t
-wav_vio_tell(void* data)
+sf_count_t wav_vio_tell(void *data)
 {
     return wav_pos;
 }
 
-SF_VIRTUAL_IO sfio =
-{
+SF_VIRTUAL_IO sfio = {
     wav_vio_filelen,
     wav_vio_seek,
     wav_vio_read,
@@ -105,11 +94,10 @@ SF_VIRTUAL_IO sfio =
     wav_vio_tell,
 };
 
-void
-ogg_read(LPSTR szFile)
+void ogg_read(LPSTR szFile)
 {
-    SNDFILE* ogg = NULL;
-    SNDFILE* wav = NULL;
+    SNDFILE *ogg = NULL;
+    SNDFILE *wav = NULL;
     SF_INFO info;
 
     float buffer[SIZE_SNDFILE_BUFFER];
@@ -117,39 +105,37 @@ ogg_read(LPSTR szFile)
 
     //Set up the ogg and wav SNDFILEs
     //OGG
-    if(!(ogg = sf_open(szFile, SFM_READ, &info)))
+    if (!(ogg = sf_open(szFile, SFM_READ, &info)))
         goto end;
 
     //WAV
     info.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
 
-    if(!sf_format_check(&info))
+    if (!sf_format_check(&info))
         goto end;
 
-    if(!(wav = sf_open_virtual(&sfio, SFM_WRITE, &info, NULL)))
+    if (!(wav = sf_open_virtual(&sfio, SFM_WRITE, &info, NULL)))
         goto end;
 
     //Write to the wav
-    while((count = sf_read_float(ogg, buffer, SIZE_SNDFILE_BUFFER)) > 0)
+    while ((count = sf_read_float(ogg, buffer, SIZE_SNDFILE_BUFFER)) > 0)
         sf_write_float(wav, buffer, count);
 
 end:
-    if(ogg)
+    if (ogg)
         sf_close(ogg);
-    if(wav)
+    if (wav)
         sf_close(wav);
 
     //Seek to the beginning
     wav_pos = 0;
 }
 
-void
-ogg_free()
+void ogg_free()
 {
-    if(wav_data)
-    {
+    if (wav_data) {
         int i = 0;
-        for(; wav_data[i]; i++)
+        for (; wav_data[i]; i++)
             free(wav_data[i]);
     }
     free(wav_data);

@@ -3,8 +3,7 @@
 
 #include "globals.h"
 
-enum
-{
+enum {
     MESSAGE_NORMAL,
     MESSAGE_INFO,
     MESSAGE_WARNING,
@@ -22,14 +21,14 @@ enum
 
 LPWSTR util_getUnicodeCP(LPCSTR sz8, int cp);
 LPSTR util_getUtf8(LPCWSTR sz16);
-void* util_findMemory(void* start, void* data, size_t size, size_t after);
+void *util_findMemory(void *start, void *data, size_t size, size_t after);
 int util_sh(LPWSTR fmt, ...);
 LPWSTR util_sh_return();
 LPWSTR util_getFilenameFromUnicode(LPCWSTR szFile);
 LPWSTR util_getFilename(LPCSTR szFile);
 int util_messagebox(LPCWSTR text, LPCWSTR title, int type);
 void util_updateQuitMessage();
-BOOL util_getResource(const char* name, void** data, size_t* size);
+BOOL util_getResource(const char *name, void **data, size_t *size);
 int util_loadEnding();
 void util_saveEnding();
 

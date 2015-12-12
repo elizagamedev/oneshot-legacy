@@ -3,13 +3,12 @@
 #include "wallpaper.h"
 
 //This goes in globals so we can use it like a std function
-wchar_t*
-_aswprintf(const wchar_t* fmt, ...)
+wchar_t *_aswprintf(const wchar_t *fmt, ...)
 {
     va_list va_args;
     va_start(va_args, fmt);
     int size = _vscwprintf(fmt, va_args) + 1;
-    wchar_t* dst = malloc(size * 2);
+    wchar_t *dst = malloc(size * 2);
     vsnwprintf(dst, size, fmt, va_args);
     va_end(va_args);
     return dst;
@@ -18,7 +17,7 @@ _aswprintf(const wchar_t* fmt, ...)
 int winver = WIN_UNSUPPORTED;
 
 //Wine function
-char* (CDECL *wine_get_unix_file_name)(LPCWSTR dosW) = NULL;
+char *(CDECL *wine_get_unix_file_name)(LPCWSTR dosW) = NULL;
 
 //DLL hinstance
 HINSTANCE dll_hInstance = NULL;
@@ -45,10 +44,10 @@ LPWSTR szDesktopPath = NULL;
 int ending = ENDING_BEGINNING;
 
 //The array of game variables
-int* variables = NULL;
+int *variables = NULL;
 
 //The array of switches
-char* switches = NULL;
+char *switches = NULL;
 
 //Username that we choose for the player, gets overwritten by the real name
 char username[256];
@@ -65,7 +64,7 @@ BOOL oneshot = FALSE;
 
 BOOL isWindowDestroyed = FALSE;
 
-FILE* saveFile = NULL;
+FILE *saveFile = NULL;
 
 BOOL forceEnding = FALSE;
 

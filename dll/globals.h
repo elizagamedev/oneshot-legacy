@@ -23,8 +23,7 @@
 #define FONT_EMBED
 #endif
 
-enum
-{
+enum {
     WIN_UNSUPPORTED,
     WIN_WINE,
     WIN_XP,
@@ -35,8 +34,7 @@ enum
     WIN_FUTURE,
 };
 
-enum
-{
+enum {
     VAR_FUNC,
     VAR_ARG1,
     VAR_ARG2,
@@ -48,8 +46,7 @@ enum
     VAR_GEORGE = 46,
 };
 
-enum
-{
+enum {
     ENDING_BEGINNING,
     ENDING_DEJAVU,
     ENDING_DEAD,
@@ -57,10 +54,10 @@ enum
     ENDING_TRAPPED,
 };
 
-wchar_t* _aswprintf(const wchar_t* fmt, ...);
+wchar_t *_aswprintf(const wchar_t *fmt, ...);
 
 //Wine function
-extern char* (CDECL *wine_get_unix_file_name)(LPCWSTR dosW);
+extern char *(CDECL *wine_get_unix_file_name)(LPCWSTR dosW);
 
 //What version of windows?
 extern int winver;
@@ -91,10 +88,10 @@ extern LPWSTR szDesktopPath;
 extern int ending;
 
 //The array of game variables
-extern int* variables;
+extern int *variables;
 
 //The array of switches
-extern char* switches;
+extern char *switches;
 
 //Username that we choose for the player, gets overwritten by the real name
 extern char username[256];
@@ -113,7 +110,7 @@ extern BOOL oneshot;
 extern BOOL isWindowDestroyed;
 
 //For saving and loading; stored as a global so we can read/write items
-extern FILE* saveFile;
+extern FILE *saveFile;
 
 //Set to TRUE if we shouldn't fuck with the ending
 extern BOOL forceEnding;
