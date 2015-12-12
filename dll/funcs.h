@@ -7,7 +7,7 @@ extern void (*const funcs[])(void);
 
 void func_init();
 
-//When the main window is closed/destroyed
+// When the main window is closed/destroyed
 void func_Close();
 void func_Destroy();
 

@@ -8,7 +8,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 {
     int code = 0;
 
-    //Get this program's path, replace extension with DLL
+    // Get this program's path, replace extension with DLL
     unsigned int size = 1;
     LPWSTR szDllPath;
     for (;;) {
@@ -22,15 +22,15 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     wcscpy(szExt, L"dll");
     int sizeDllPath = (szExt - szDllPath) + 4;
 
-    //Copy and add replace name with RPG2003.EXE
-    //Allocate a slightly larger buffer than necessary so we don't overflow
+    // Copy and add replace name with RPG2003.EXE
+    // Allocate a slightly larger buffer than necessary so we don't overflow
     LPWSTR szExePath = malloc((sizeDllPath + 11) * sizeof(WCHAR));
     wcscpy(szExePath, szDllPath);
     PathRemoveFileSpecW(szExePath);
     PathAddBackslashW(szExePath);
     wcscat(szExePath, L"RPG2003.EXE");
 
-    //Injection variables
+    // Injection variables
     STARTUPINFOW si;
     PROCESS_INFORMATION pi;
     memset(&si, 0, sizeof(si));
@@ -42,7 +42,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     void *pLoadLibraryW = NULL;
     HANDLE thread = NULL;
 
-    //Spawn the RPG2003.EXE process and inject
+    // Spawn the RPG2003.EXE process and inject
 
     if (!CreateProcessW(NULL, szExePath, 0, 0, FALSE, CREATE_SUSPENDED, NULL, NULL, &si, &pi))
         goto err;
@@ -79,7 +79,7 @@ err:
     MessageBoxW(NULL, L"Could not inject DLL into RPG2003.EXE.", L"Error", MB_ICONERROR);
 
 done:
-    //Cleanup
+    // Cleanup
     if (thread)
         CloseHandle(thread);
     if (kernel32)

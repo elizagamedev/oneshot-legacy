@@ -58,7 +58,7 @@ void wallpaper_get(Wallpaper *wallpaper)
         size_t size = wcslen(buff) + 1;
 
         if (wallpaper_winetype == WINETYPE_GNOME) {
-            //Parse it for other info
+            // Parse it for other info
             int i = 0, index = 0;
             WCHAR *start = buff;
             for (; i < size; i++) {
@@ -99,40 +99,40 @@ void wallpaper_get(Wallpaper *wallpaper)
     DWORD szStyleSize = sizeof(szStyle) - 1;
     DWORD szTileSize = sizeof(szTile) - 1;
 
-    //Transcoded/cached JPEG wallpaper
+    // Transcoded/cached JPEG wallpaper
     WCHAR szFile[MAX_PATH+1];
 
-    //------------------
-    //QUERY THE REGISTRY/STUFF
-    //------------------
+    // ------------------
+    // QUERY THE REGISTRY/STUFF
+    // ------------------
 
     HKEY hKey = NULL;
     if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Control Panel\\Desktop", 0, KEY_READ, &hKey) != ERROR_SUCCESS)
         goto end;
 
-    //Style
+    // Style
     if (RegQueryValueExW(hKey, L"WallpaperStyle", 0, NULL, (LPBYTE)(szStyle), &szStyleSize) != ERROR_SUCCESS)
         goto end;
 
-    //Tile
+    // Tile
     if (RegQueryValueExW(hKey, L"TileWallpaper", 0, NULL, (LPBYTE)(szTile), &szTileSize) != ERROR_SUCCESS)
         goto end;
 
-    //File path
+    // File path
     if (!SystemParametersInfoW(SPI_GETDESKWALLPAPER, MAX_PATH, (PVOID)szFile, 0))
         goto end;
 
-    //Color
+    // Color
     wallpaper->colorPrimary = (unsigned int)GetSysColor(COLOR_BACKGROUND);
-    //jint jcolor = ((color & 0x0000FF) << 16) | (color & 0x00FF00) | ((color & 0xFF0000) >> 16);
+    // jint jcolor = ((color & 0x0000FF) << 16) | (color & 0x00FF00) | ((color & 0xFF0000) >> 16);
 
-    //----------
-    //PARSE DATA
-    //----------
+    // ----------
+    // PARSE DATA
+    // ----------
 
     wallpaper->filename = wcsdup(szFile);
 
-    //Get the enum value from the registry keys
+    // Get the enum value from the registry keys
     if (!wcscmp(szTile, L"0")) {
         if (!wcscmp(szStyle, L"2"))
             wallpaper->style = STYLE_STRETCH;
@@ -168,7 +168,7 @@ BOOL wallpaper_set(Wallpaper *wallpaper)
         }
     }
 
-    //Set the wallpaper
+    // Set the wallpaper
     HKEY hKey = NULL;
     if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Control Panel\\Desktop", 0, KEY_WRITE, &hKey) != ERROR_SUCCESS)
         goto end;
@@ -178,7 +178,7 @@ BOOL wallpaper_set(Wallpaper *wallpaper)
 
     int style = wallpaper->style;
 
-    //Find the correct style/tile strings
+    // Find the correct style/tile strings
     if (style == STYLE_SPAN)
         style = STYLE_FIT;
     if (winver < WIN_7) {
@@ -210,18 +210,18 @@ BOOL wallpaper_set(Wallpaper *wallpaper)
         goto end;
     }
 
-    //Set the style
+    // Set the style
     if (RegSetValueExW(hKey, L"WallpaperStyle", 0, REG_SZ, (PVOID)szStyle, (wcslen(szStyle) + 1) * 2) != ERROR_SUCCESS)
         goto end;
 
     if (RegSetValueExW(hKey, L"TileWallpaper", 0, REG_SZ, (PVOID)szTile, 2) != ERROR_SUCCESS)
         goto end;
 
-    //Set the wallpaper
+    // Set the wallpaper
     if (!SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, (PVOID)wallpaper->filename, SPIF_UPDATEINIFILE))
         goto end;
 
-    //Set the color
+    // Set the color
     int colorId = COLOR_BACKGROUND;
     DWORD color = ((wallpaper->colorPrimary & 0x0000FF) << 16) | (wallpaper->colorPrimary & 0x00FF00) | ((wallpaper->colorPrimary & 0xFF0000) >> 16);
     if (!SetSysColors(1, &colorId, (const COLORREF *)&color))
@@ -292,20 +292,20 @@ int writeBmp(LPWSTR filename, int width, int height, unsigned char *pixels)
     rowSize = ((24 * width + 31) / 32) * 4;
     bmpSize = rowSize * height;
 
-    //Create file header
+    // Create file header
     fileHeader.bfType = MAKEWORD('B', 'M');
     fileHeader.bfSize = sizeof(fileHeader) + sizeof(infoHeader) + bmpSize;
     fileHeader.bfReserved1 = 0;
     fileHeader.bfReserved2 = 0;
     fileHeader.bfOffBits = sizeof(fileHeader) + sizeof(infoHeader);
 
-    //Write file header
+    // Write file header
     if (fwrite(&fileHeader, sizeof(fileHeader), 1, f) != 1) {
         rc = 1;
         goto end;
     }
 
-    //Create info header
+    // Create info header
     infoHeader.biSize = sizeof(infoHeader);
     infoHeader.biWidth = width;
     infoHeader.biHeight = height;
@@ -318,20 +318,20 @@ int writeBmp(LPWSTR filename, int width, int height, unsigned char *pixels)
     infoHeader.biClrUsed = 0;
     infoHeader.biClrImportant = 0;
 
-    //Write info header
+    // Write info header
     if (fwrite(&infoHeader, sizeof(infoHeader), 1, f) != 1) {
         rc = 1;
         goto end;
     }
 
-    //Copy to BMP buffer
+    // Copy to BMP buffer
     bmpPixels = malloc(bmpSize);
 
     for (y = 0; y < height; y++) {
         memcpy(bmpPixels + rowSize * (height-1-y), pixels + width * y * 3, width * 3);
     }
 
-    //Write bitmap data
+    // Write bitmap data
     if (fwrite(bmpPixels, bmpSize, 1, f) != 1) {
         rc = 1;
         goto end;
@@ -367,7 +367,7 @@ void wallpaper_gen(Wallpaper *wallpaper, int width, int height, unsigned char *p
             int bpp = 0;
 
             if (wallpaper_winetype == WINETYPE_OSX) {
-                //For OS X, use only one monitor
+                // For OS X, use only one monitor
                 MONITORINFO mi;
                 ZeroMemory(&mi, sizeof(mi));
                 mi.cbSize = sizeof(mi);
@@ -383,10 +383,10 @@ void wallpaper_gen(Wallpaper *wallpaper, int width, int height, unsigned char *p
                 dstWidth = monitors[0].w;
                 dstHeight = monitors[0].h;
 
-                //3 bytes per pixel (RGB)
+                // 3 bytes per pixel (RGB)
                 bpp = 3;
             } else {
-                //For X11, use all monitors
+                // For X11, use all monitors
                 DISPLAY_DEVICE dd;
                 ZeroMemory(&dd, sizeof(dd));
                 dd.cb = sizeof(dd);
@@ -399,11 +399,11 @@ void wallpaper_gen(Wallpaper *wallpaper, int width, int height, unsigned char *p
                 dstWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
                 dstHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
 
-                //4 bytes per pixel (BGRX)
+                // 4 bytes per pixel (BGRX)
                 bpp = 4;
             }
 
-            //Create image buffer; render the image on every monitor
+            // Create image buffer; render the image on every monitor
             unsigned char *pixelsScaled = malloc(dstWidth * dstHeight * bpp);
             for (i = 0; i < dstWidth * dstHeight; i++) {
                 pixelsScaled[i * bpp + 0] = (wallpaper->colorPrimary >>  0) & 0xFF;
@@ -425,11 +425,11 @@ void wallpaper_gen(Wallpaper *wallpaper, int width, int height, unsigned char *p
                 int dstH = monitors[i].h;
 
                 if (monitors[i].h * width / height > monitors[i].w) {
-                    //Center the image vertically
+                    // Center the image vertically
                     dstH = monitors[i].w * height / width;
                     dstY += (monitors[i].h - dstH) / 2;
                 } else {
-                    //Center the image horizontally
+                    // Center the image horizontally
                     dstW = monitors[i].h * width / height;
                     dstX += (monitors[i].w - dstW) / 2;
                 }
@@ -439,17 +439,17 @@ void wallpaper_gen(Wallpaper *wallpaper, int width, int height, unsigned char *p
             }
 
             if (wallpaper_winetype == WINETYPE_OSX) {
-                //save to bmp
+                // save to bmp
                 writeBmp(wallpaper->filename, dstWidth, dstHeight, pixelsScaled);
             } else {
-                //save to bmp first
+                // save to bmp first
                 writeBmp(wallpaper->filename, width, height, pixels);
                 free(wallpaper->filename);
 
-                //now save to raw data
+                // now save to raw data
 
-                //for the filename of the wallpaper; guarantee "uniqueness"
-                //with file time's low date time
+                // for the filename of the wallpaper; guarantee "uniqueness"
+                // with file time's low date time
                 FILETIME filetime;
                 GetSystemTimeAsFileTime(&filetime);
                 wallpaper->filename = _aswprintf(L"%ls%u", szDataPath, filetime.dwLowDateTime);
@@ -472,16 +472,16 @@ void wallpaper_gen(Wallpaper *wallpaper, int width, int height, unsigned char *p
         }
     }
 
-    //Save the image to bmp
+    // Save the image to bmp
     writeBmp(wallpaper->filename, width, height, pixels);
 
     if (winver == WIN_WINE) {
-        //Convert to file://<unix path>
+        // Convert to file://<unix path>
         char *filenameUnix8 = wine_get_unix_file_name(wallpaper->filename);
         free(wallpaper->filename);
         LPWSTR filenameUnix = util_getUnicodeCP(filenameUnix8, CP_UTF8);
         HeapFree(GetProcessHeap(), 0, filenameUnix8);
-        wallpaper->filename = _aswprintf(L"file://%ls", filenameUnix);
+        wallpaper->filename = _aswprintf(L"file:// %ls", filenameUnix);
         free(filenameUnix);
     }
 }

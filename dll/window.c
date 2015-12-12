@@ -2,33 +2,33 @@
 
 #include "util.h"
 
-//For the kitty escape window
+// For the kitty escape window
 const char wndKitty_classname[] = "wndKitty";
 HWND wndKitty = NULL;
 HBITMAP wndKitty_bmps[3] = {NULL};
 volatile HANDLE wndKittyThread = NULL;
 int wndKitty_offset = 0;
 
-//Is the kitty walking?
+// Is the kitty walking?
 BOOL wndKitty_isActive = FALSE;
 
 #define FPS 60
 
-//kitty thread
+// kitty thread
 DWORD WINAPI wndKitty_thread(LPVOID lpParameter)
 {
     int screenHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
     unsigned long tickLast = 0;
 
-    //Get starting position
+    // Get starting position
     RECT area;
     GetWindowRect(wndKitty, &area);
 
     wndKitty_isActive = TRUE;
 
-    //Just keep walking down
+    // Just keep walking down
     for (;;) {
-        //Move window
+        // Move window
         wndKitty_offset += 2;
 
         if (area.top + wndKitty_offset >= screenHeight)
@@ -36,10 +36,10 @@ DWORD WINAPI wndKitty_thread(LPVOID lpParameter)
 
         SetWindowPos(wndKitty, NULL, area.left, area.top + wndKitty_offset, 0, 0, SWP_NOSIZE);
 
-        //Repaint window
+        // Repaint window
         InvalidateRect(wndKitty, NULL, FALSE);
 
-        //Regulate FPS
+        // Regulate FPS
         unsigned long delta = GetTickCount() - tickLast;
         if (delta < 1000 / FPS)
             Sleep(1000 / FPS - delta);
@@ -48,7 +48,7 @@ DWORD WINAPI wndKitty_thread(LPVOID lpParameter)
 
     wndKitty_isActive = FALSE;
 
-    //If the window is destroyed, quit the game
+    // If the window is destroyed, quit the game
     if (isWindowDestroyed) {
         util_saveEnding();
         exit(0);
@@ -57,7 +57,7 @@ DWORD WINAPI wndKitty_thread(LPVOID lpParameter)
     return 0;
 }
 
-//Kitty window procedure
+// Kitty window procedure
 LRESULT CALLBACK wndKitty_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg) {
@@ -104,7 +104,7 @@ LRESULT CALLBACK wndKitty_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 
 void wndKitty_create()
 {
-    //load kitty walk animation
+    // load kitty walk animation
     wndKitty_bmps[0] = LoadBitmap(dll_hInstance, "NIKO1");
     wndKitty_bmps[1] = LoadBitmap(dll_hInstance, "NIKO2");
     wndKitty_bmps[2] = LoadBitmap(dll_hInstance, "NIKO3");
@@ -141,7 +141,7 @@ void wndKitty_create()
 
 void wndKitty_start()
 {
-    //Calculate where to stick the window
+    // Calculate where to stick the window
     POINT pos;
     pos.x = (9 * 16 - 4) * 2;
     pos.y = (13 * 16) * 2;

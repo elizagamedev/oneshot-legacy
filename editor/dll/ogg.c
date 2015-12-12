@@ -103,12 +103,12 @@ void ogg_read(LPSTR szFile)
     float buffer[SIZE_SNDFILE_BUFFER];
     sf_count_t count;
 
-    //Set up the ogg and wav SNDFILEs
-    //OGG
+    // Set up the ogg and wav SNDFILEs
+    // OGG
     if (!(ogg = sf_open(szFile, SFM_READ, &info)))
         goto end;
 
-    //WAV
+    // WAV
     info.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
 
     if (!sf_format_check(&info))
@@ -117,7 +117,7 @@ void ogg_read(LPSTR szFile)
     if (!(wav = sf_open_virtual(&sfio, SFM_WRITE, &info, NULL)))
         goto end;
 
-    //Write to the wav
+    // Write to the wav
     while ((count = sf_read_float(ogg, buffer, SIZE_SNDFILE_BUFFER)) > 0)
         sf_write_float(wav, buffer, count);
 
@@ -127,7 +127,7 @@ end:
     if (wav)
         sf_close(wav);
 
-    //Seek to the beginning
+    // Seek to the beginning
     wav_pos = 0;
 }
 

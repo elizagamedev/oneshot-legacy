@@ -7,7 +7,7 @@ LPSTR util_getFilename(LPCSTR szFile)
     LPSTR szFileNew = strdup(szFile);
     LPSTR szFileRelative = szFileNew + strlen(szFileNew) - 1;
 
-    //Get the "relative" path of the file
+    // Get the "relative" path of the file
     BOOL firstSlash = FALSE;
     for (; szFileRelative > szFileNew; szFileRelative--) {
         if (*szFileRelative == '\\') {
@@ -19,7 +19,7 @@ LPSTR util_getFilename(LPCSTR szFile)
         }
     }
 
-    //Replace music wav with ogg
+    // Replace music wav with ogg
     if (!strnicmp(szFileRelative, "Music\\", 6)) {
         LPSTR ext = PathFindExtensionA(szFileRelative) + 1;
         if (!stricmp(ext, "wav"))
@@ -36,11 +36,11 @@ void util_oggToWav(LPSTR szFile)
         strcpy(ext, "wav");
 }
 
-//----------------
-//HOOKED FUNCTIONS
-//----------------
+// ----------------
+// HOOKED FUNCTIONS
+// ----------------
 
-//KERNEL
+// KERNEL
 
 HANDLE WINAPI
 hook_FindFirstFileA(LPCSTR lpFileName, LPWIN32_FIND_DATAA lpFindFileData)
@@ -81,14 +81,14 @@ hook_CreateFileA(LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LP
         return result;
     }
 
-    //Convert the ogg to a wav in memory
+    // Convert the ogg to a wav in memory
     if (szOggOld && !stricmp(szOggOld, lpFileNameNew)) {
-        //If we've already got an OGG loaded in memory with this filename,
-        //just reset it
+        // If we've already got an OGG loaded in memory with this filename,
+        // just reset it
         wav_vio_seek(0, SEEK_SET, NULL);
         free(lpFileNameNew);
     } else {
-        //Load the new ogg
+        // Load the new ogg
         ogg_free();
         ogg_read(lpFileNameNew);
         free(szOggOld);
@@ -139,9 +139,9 @@ hook_CloseHandle(HANDLE hObject)
     return CloseHandle(hObject);
 }
 
-//---------
-//HOOKING
-//---------
+// ---------
+// HOOKING
+// ---------
 typedef struct {
     const char *name;
     void *funcHook;
@@ -166,7 +166,7 @@ Hook hooks[] = {
 
 BOOL hook()
 {
-    //Initialize original function addresses
+    // Initialize original function addresses
     HMODULE module = NULL;
     int i, j;
     for (i = 0; i < HOOK_MAX; i++) {
@@ -176,22 +176,22 @@ BOOL hook()
             module = GetModuleHandleA(hooks[i].name);
     }
 
-    //Check DOS Header
+    // Check DOS Header
     PIMAGE_DOS_HEADER dos = (PIMAGE_DOS_HEADER)GetModuleHandleA(NULL);
     if (dos->e_magic != IMAGE_DOS_SIGNATURE)
         return FALSE;
 
-    //Check NT Header
+    // Check NT Header
     PIMAGE_NT_HEADERS nt = MAKE_POINTER(PIMAGE_NT_HEADERS, dos, dos->e_lfanew);
     if (nt->Signature != IMAGE_NT_SIGNATURE)
         return FALSE;
 
-    //Check import module table
+    // Check import module table
     PIMAGE_IMPORT_DESCRIPTOR modules = MAKE_POINTER(PIMAGE_IMPORT_DESCRIPTOR, dos, nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
     if (modules == (PIMAGE_IMPORT_DESCRIPTOR)nt)
         return FALSE;
 
-    //Find the correct module
+    // Find the correct module
     while (modules->Name) {
         const char *szModule = MAKE_POINTER(const char *, dos, modules->Name);
 
@@ -201,12 +201,12 @@ BOOL hook()
         }
 
         if (i < HOOK_MAX) {
-            //Find the correct function
+            // Find the correct function
             PIMAGE_THUNK_DATA thunk = MAKE_POINTER(PIMAGE_THUNK_DATA, dos, modules->FirstThunk);
             while (thunk->u1.Function) {
                 for (j = i + 1; j < HOOK_MAX && hooks[j].funcHook; j++) {
                     if (thunk->u1.Function == (DWORD)hooks[j].funcOrig) {
-                        //Overwrite
+                        // Overwrite
                         DWORD flags;
                         if (!VirtualProtect(&thunk->u1.Function, sizeof(thunk->u1.Function), PAGE_READWRITE, &flags)) {
                             return FALSE;
@@ -225,21 +225,21 @@ BOOL hook()
     return TRUE;
 }
 
-//Entry point
+// Entry point
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
     switch (fdwReason) {
     case DLL_PROCESS_ATTACH:
         return hook();
-    break;
 
-    case DLL_PROCESS_DETACH: {
+    case DLL_PROCESS_DETACH:
         free(szOggOld);
         ogg_free();
-    }
-    break;
+        break;
+
     case DLL_THREAD_ATTACH:
         break;
+
     case DLL_THREAD_DETACH:
         break;
     }

@@ -69,7 +69,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 {
     int code = 0;
 
-    //Injection variables
+    // Injection variables
     STARTUPINFOW si;
     PROCESS_INFORMATION pi;
     memset(&si, 0, sizeof(si));
@@ -83,7 +83,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
     LPWSTR szTempPath = NULL;
 
-    //Get this program's path and module name
+    // Get this program's path and module name
     unsigned int size = 1;
     LPWSTR szGamePath;
     for (;;) {
@@ -94,24 +94,24 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         size *= 2;
     }
 
-    //Module name (RPG_RT.exe, usually)
+    // Module name (RPG_RT.exe, usually)
     LPWSTR szExeName = wcsdup(szGamePath);
     PathStripPathW(szExeName);
 
-    //Game path
+    // Game path
     PathRemoveFileSpecW(szGamePath);
     PathAddBackslashW(szGamePath);
 
-    //Construct the temporary file directory path
+    // Construct the temporary file directory path
     kernel32 = LoadLibraryW(L"kernel32.dll");
     if (!kernel32)
         goto err;
 
     if (GetProcAddress(kernel32, "wine_get_unix_file_name")) {
-        //Hack? fix this later to use a wine function, maybe
+        // Hack? fix this later to use a wine function, maybe
         szTempPath = malloc((STRLEN(TEMP_PATH_UNIX TEMP_PATH) + 2) * sizeof(WCHAR));
         wcscpy(szTempPath, TEMP_PATH_UNIX TEMP_PATH);
-        szTempPath[STRLEN(TEMP_PATH_UNIX TEMP_PATH)+1] = 0; //Double null-terminate
+        szTempPath[STRLEN(TEMP_PATH_UNIX TEMP_PATH)+1] = 0; // Double null-terminate
     } else {
         WCHAR szTempPathRaw[MAX_PATH];
         int sizeTempPathRaw = GetTempPathW(MAX_PATH, szTempPathRaw);
@@ -119,10 +119,10 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         szTempPath = malloc((sizeTempPath+2) * sizeof(WCHAR));
         wcscpy(szTempPath, szTempPathRaw);
         wcscat(szTempPath, TEMP_PATH);
-        szTempPath[sizeTempPath+1] = 0; //Double null-terminate
+        szTempPath[sizeTempPath+1] = 0; // Double null-terminate
     }
 
-    //Construct the file paths
+    // Construct the file paths
     LPWSTR szDllPath = _aswprintf(L"%ls" DLL_NAME, szTempPath);
     LPWSTR szExePath = _aswprintf(L"%ls%ls", szTempPath, szExeName);
     LPWSTR szFuncPath = _aswprintf(L"%ls" FUNC_NAME, szTempPath);
@@ -133,7 +133,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     LPWSTR szFontPath = _aswprintf(L"%ls" FONT_FILE, szTempPath);
 #endif
 
-    //Write the embedded data to the HDD
+    // Write the embedded data to the HDD
     SHCreateDirectoryExW(NULL, szTempPath, NULL);
     if (writeResource(hInstance, "HOOK_DLL", szDllPath, TRUE))
         goto err;
@@ -152,10 +152,10 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         goto err;
 #endif
 
-    //Append args to exe path
+    // Append args to exe path
     wcscat(szExePath, EXE_ARGS);
 
-    //Spawn the RPG_RT.exe process and inject
+    // Spawn the RPG_RT.exe process and inject
 
     if (!CreateProcessW(NULL, szExePath, 0, 0, FALSE, CREATE_SUSPENDED, NULL, szGamePath, &si, &pi))
         goto err;
@@ -190,7 +190,7 @@ err:
     MessageBoxW(NULL, STR_ERROR, L"Error", MB_ICONERROR);
 
 done:
-    //Cleanup
+    // Cleanup
     if (thread)
         CloseHandle(thread);
     if (kernel32)

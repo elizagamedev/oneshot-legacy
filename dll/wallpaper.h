@@ -19,8 +19,8 @@ typedef enum {
     SHADING_HORIZONTAL,
 } WallpaperShading;
 
-//There are two possibilities for representing the wallpaper:
-//As a filename or as RGB data.
+// There are two possibilities for representing the wallpaper:
+// As a filename or as RGB data.
 
 typedef struct {
     LPWSTR filename;
@@ -35,7 +35,7 @@ BOOL wallpaper_set(Wallpaper *wallpaper);
 void wallpaper_gen(Wallpaper *wallpaper, int width, int height, unsigned char *pixels);
 void wallpaper_free(Wallpaper *wallpaper);
 
-//This is the user's wallpaper before we switch it
+// This is the user's wallpaper before we switch it
 extern Wallpaper wallpaperOld;
 
 #endif

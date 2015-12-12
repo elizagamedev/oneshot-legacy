@@ -56,19 +56,19 @@ enum {
 
 wchar_t *_aswprintf(const wchar_t *fmt, ...);
 
-//Wine function
+// Wine function
 extern char *(CDECL *wine_get_unix_file_name)(LPCWSTR dosW);
 
-//What version of windows?
+// What version of windows?
 extern int winver;
 
-//DLL hinstance
+// DLL hinstance
 extern HINSTANCE dll_hInstance;
 
-//RPG game window/title
+// RPG game window/title
 extern HWND window;
 
-//LAUNCHER VARIABLES
+// LAUNCHER VARIABLES
 extern LPWSTR szFuncCmd;
 extern LPWSTR szDataPath;
 extern LPWSTR szRcPath;
@@ -80,42 +80,42 @@ extern WCHAR szBatPath[];
 extern LPWSTR szFontPath;
 #endif
 
-//Strings for funcs
+// Strings for funcs
 extern LPWSTR szDocumentPath;
 extern LPWSTR szDesktopPath;
 
-//How do we start out the game?
+// How do we start out the game?
 extern int ending;
 
-//The array of game variables
+// The array of game variables
 extern int *variables;
 
-//The array of switches
+// The array of switches
 extern char *switches;
 
-//Username that we choose for the player, gets overwritten by the real name
+// Username that we choose for the player, gets overwritten by the real name
 extern char username[256];
 extern DWORD usernameSize;
 
-//TRUE if the game started. For the deja vu "ending".
+// TRUE if the game started. For the deja vu "ending".
 extern BOOL gameStarted;
 
-//Are we in the game?
+// Are we in the game?
 extern BOOL isInGame;
 
-//TRUE if the oneshot function was called. If the game is exited while this is true, the kitty dies.
+// TRUE if the oneshot function was called. If the game is exited while this is true, the kitty dies.
 extern BOOL oneshot;
 
-//TRUE if the main window is destroyed
+// TRUE if the main window is destroyed
 extern BOOL isWindowDestroyed;
 
-//For saving and loading; stored as a global so we can read/write items
+// For saving and loading; stored as a global so we can read/write items
 extern FILE *saveFile;
 
-//Set to TRUE if we shouldn't fuck with the ending
+// Set to TRUE if we shouldn't fuck with the ending
 extern BOOL forceEnding;
 
-//Set this to FALSE to disable closing the game
+// Set this to FALSE to disable closing the game
 extern BOOL closeEnabled;
 
 #endif

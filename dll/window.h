@@ -3,7 +3,7 @@
 
 #include "globals.h"
 
-//For the kitty escape window
+// For the kitty escape window
 extern HWND wndKitty;
 
 extern BOOL wndKitty_isActive;

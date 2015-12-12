@@ -2,7 +2,7 @@
 #include "util.h"
 #include "wallpaper.h"
 
-//This goes in globals so we can use it like a std function
+// This goes in globals so we can use it like a std function
 wchar_t *_aswprintf(const wchar_t *fmt, ...)
 {
     va_list va_args;
@@ -16,16 +16,16 @@ wchar_t *_aswprintf(const wchar_t *fmt, ...)
 
 int winver = WIN_UNSUPPORTED;
 
-//Wine function
+// Wine function
 char *(CDECL *wine_get_unix_file_name)(LPCWSTR dosW) = NULL;
 
-//DLL hinstance
+// DLL hinstance
 HINSTANCE dll_hInstance = NULL;
 
-//RPG game window
+// RPG game window
 HWND window = NULL;
 
-//LAUNCHER VARIABLES
+// LAUNCHER VARIABLES
 LPWSTR szDataPath = NULL;
 LPWSTR szFuncCmd = NULL;
 LPWSTR szRcPath = NULL;
@@ -40,26 +40,26 @@ LPWSTR szFontPath = NULL;
 LPWSTR szDocumentPath = NULL;
 LPWSTR szDesktopPath = NULL;
 
-//How do we start out the game?
+// How do we start out the game?
 int ending = ENDING_BEGINNING;
 
-//The array of game variables
+// The array of game variables
 int *variables = NULL;
 
-//The array of switches
+// The array of switches
 char *switches = NULL;
 
-//Username that we choose for the player, gets overwritten by the real name
+// Username that we choose for the player, gets overwritten by the real name
 char username[256];
 DWORD usernameSize = sizeof(username);
 
-//TRUE if the game started. For the deja vu "ending".
+// TRUE if the game started. For the deja vu "ending".
 BOOL gameStarted = FALSE;
 
-//TRUE if we're in the game
+// TRUE if we're in the game
 BOOL isInGame = FALSE;
 
-//TRUE if the oneshot function was called. If the game is exited while this is true, the kitty dies.
+// TRUE if the oneshot function was called. If the game is exited while this is true, the kitty dies.
 BOOL oneshot = FALSE;
 
 BOOL isWindowDestroyed = FALSE;

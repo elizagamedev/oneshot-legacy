@@ -53,7 +53,7 @@ static int CALLBACK callback_font(const LOGFONTA *lpelfe, const TEXTMETRICA *lpn
 #endif
 
 #define HKEY_FAKE       ((HKEY)0x80000010)
-//#define HFILE_FAKE      ((HANDLE)(LONG_PTR)-2)
+// #define HFILE_FAKE      ((HANDLE)(LONG_PTR)-2)
 #define HFILE_FAKE      ((HANDLE)1)
 
 #ifndef DOCUMENT_NAME
@@ -61,14 +61,14 @@ static int CALLBACK callback_font(const LOGFONTA *lpelfe, const TEXTMETRICA *lpn
 #endif
 #define WALLPAPER_NAME      L"COMBINATION.oneshot.bmp"
 
-//----------------
-//HOOKED FUNCTIONS
-//----------------
+// ----------------
+// HOOKED FUNCTIONS
+// ----------------
 
-//KERNEL
+// KERNEL
 
 #ifdef HOOK_LANG
-//These functions are vital for telling RPGM to use a MBCS
+// These functions are vital for telling RPGM to use a MBCS
 BOOL WINAPI
 hook_GetCPInfo(UINT CodePage, LPCPINFO lpCPInfo)
 {
@@ -109,7 +109,7 @@ hook_GetModuleFileNameA(HMODULE hModule, LPSTR lpFileName, DWORD nSize)
     return 0;
 }
 
-//Sound gets loaded as absolute path, for some reason, so trick it into using a relative path
+// Sound gets loaded as absolute path, for some reason, so trick it into using a relative path
 DWORD WINAPI
 hook_GetFullPathNameA(LPCSTR lpFileName, DWORD nBufferLength, LPSTR lpBuffer, LPSTR *lpFilePart)
 {
@@ -142,7 +142,7 @@ LPWSTR szOggOld = NULL;
 HANDLE WINAPI
 hook_CreateFileA(LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile)
 {
-    //See if this is a function or otherwise special file
+    // See if this is a function or otherwise special file
     if (!stricmp(lpFileName, "Title\\title.xyz")) {
         if (ending <= ENDING_DEJAVU) {
             if (oneshot)
@@ -153,11 +153,11 @@ hook_CreateFileA(LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LP
             util_saveEnding();
         }
 
-        //Create the kitty escape window if it doesn't exist
+        // Create the kitty escape window if it doesn't exist
         if (!wndKitty)
             wndKitty_create();
 
-        //Make sure we flag this as not being in-game anymore
+        // Make sure we flag this as not being in-game anymore
         isInGame = FALSE;
         oneshot = FALSE;
     } else if (!stricmp(lpFileName, "Sound\\_init.wav")) {
@@ -173,14 +173,14 @@ hook_CreateFileA(LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LP
         return result;
     }
 
-    //Convert the ogg to a wav in memory
+    // Convert the ogg to a wav in memory
     if (szOggOld && !wcsicmp(szOggOld, lpFileName16)) {
-        //If we've already got an OGG loaded in memory with this filename,
-        //just reset it
+        // If we've already got an OGG loaded in memory with this filename,
+        // just reset it
         wav_vio_seek(0, SEEK_SET, NULL);
         free(lpFileName16);
     } else {
-        //Load the new ogg
+        // Load the new ogg
         ogg_free();
         ogg_read(lpFileName16);
         free(szOggOld);
@@ -243,14 +243,14 @@ hook_GetFileAttributesA(LPCSTR lpFileName)
 DWORD WINAPI
 hook_GetPrivateProfileStringA(LPCSTR lpAppName, LPCSTR lpKeyName, LPCSTR lpDefault, LPSTR lpReturnedString, DWORD nSize, LPCSTR lpFileName)
 {
-    //Force FullPackageFlag to be 1
+    // Force FullPackageFlag to be 1
     if (!stricmp(lpKeyName, "FullPackageFlag")) {
         lpReturnedString[0] = '1';
         lpReturnedString[1] = 0;
         return 1;
     }
 
-    //Everything else is an empty string
+    // Everything else is an empty string
     lpReturnedString[0] = 0;
     return 0;
 }
@@ -283,7 +283,7 @@ hook_LoadResource(HMODULE hModule, HRSRC hResInfo)
     return LoadResource(hModule, hResInfo);
 }
 
-//USER
+// USER
 
 #ifdef MBCS
 int WINAPI
@@ -362,7 +362,7 @@ hook_DefWindowProcA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
     switch (Msg) {
     case WM_SETTEXT:
-        //Ignore if the first byte is a null--this is the string sent by the game
+        // Ignore if the first byte is a null--this is the string sent by the game
         if (*((char *)lParam) == 0)
             return TRUE;
         break;
@@ -392,7 +392,7 @@ hook_SetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy,
     return SetWindowPos(hWnd, hWndInsertAfter, X, Y, cx, cy, uFlags);
 }
 
-//ADVAPI
+// ADVAPI
 LONG WINAPI
 hook_RegCreateKeyExA(HKEY hKey, LPCSTR lpSubKey, DWORD Reserved, LPSTR lpClass, DWORD dwOptions,
                      REGSAM samDesired, LPSECURITY_ATTRIBUTES lpSecurityAttributes, PHKEY phkResult, LPDWORD lpdwDisposition)
@@ -420,8 +420,8 @@ hook_RegCloseKey(HKEY hKey)
     return ERROR_SUCCESS;
 }
 
-//SHELL
-//LSD files use this for some reason
+// SHELL
+// LSD files use this for some reason
 BOOL
 hook_SHGetPathFromIDListA(PCIDLIST_ABSOLUTE pidl, LPTSTR pszPath)
 {
@@ -429,7 +429,7 @@ hook_SHGetPathFromIDListA(PCIDLIST_ABSOLUTE pidl, LPTSTR pszPath)
     return TRUE;
 }
 
-//GDI
+// GDI
 #ifdef HOOK_LANG
 BOOL WINAPI
 hook_GetTextExtentPoint32A(HDC hdc, LPCSTR lpString, int c, LPSIZE lpSize)
@@ -471,7 +471,7 @@ hook_CreateFontIndirectA(const LOGFONTA *lplf)
 }
 #endif
 
-//COM OBJECTS
+// COM OBJECTS
 
 #if 0
 void hook_QueryInterface(REFIID riid, void **ppvObject);
@@ -479,7 +479,7 @@ void hook_QueryInterface(REFIID riid, void **ppvObject);
 #define GET_VTBL(type) type* vtbl = ((void**)This->lpVtbl)[sizeof(type)/4]
 
 #if 0
-//IBasicAudio
+// IBasicAudio
 STDMETHODIMP
 hook_IBasicAudio_QueryInterface(IBasicAudio *This, REFIID riid, void **ppvObject)
 {
@@ -544,7 +544,7 @@ hook_IBasicAudio_put_Volume(IBasicAudio *This, long lVolume)
     return vtbl->put_Volume(This, lVolume);
 }
 
-//IMediaControl
+// IMediaControl
 STDMETHODIMP
 hook_IMediaControl_QueryInterface(IMediaControl *This, REFIID riid, void **ppvObject)
 {
@@ -609,7 +609,7 @@ hook_IMediaControl_StopWhenReady(IMediaControl *This)
     return vtbl->StopWhenReady(This);
 }
 
-//IGraphBuilder
+// IGraphBuilder
 STDMETHODIMP
 hook_IGraphBuilder_QueryInterface(IGraphBuilder *This, REFIID riid, void **ppvObject)
 {
@@ -645,7 +645,7 @@ hook_IGraphBuilder_RenderFile(IGraphBuilder *This, LPCWSTR lpwstrFile, LPCWSTR l
     return result;
 }
 
-//IUnknown
+// IUnknown
 STDMETHODIMP
 hook_IUnknown_QueryInterface(IUnknown *This, REFIID riid, void **ppvObject)
 {
@@ -658,21 +658,21 @@ hook_IUnknown_QueryInterface(IUnknown *This, REFIID riid, void **ppvObject)
     return result;
 }
 
-//Generic
+// Generic
 void
 hook_QueryInterface(REFIID riid, void **ppvObject)
 {
     if (IsEqualIID(riid, (REFGUID)&IID_IGraphBuilder)) {
         IGraphBuilder *obj = (IGraphBuilder *)*ppvObject;
 
-        //printf("IGraphBuilder: %p: Create\n", obj);
+        // printf("IGraphBuilder: %p: Create\n", obj);
 
         IGraphBuilderVtbl *vtbl = malloc(sizeof(IGraphBuilderVtbl) + 4);
         ((void **)vtbl)[sizeof(IGraphBuilderVtbl)/4] = obj->lpVtbl;
         memcpy(vtbl, obj->lpVtbl, sizeof(IGraphBuilderVtbl));
         obj->lpVtbl = vtbl;
 
-        //vtbl->QueryInterface = hook_IGraphBuilder_QueryInterface;
+        // vtbl->QueryInterface = hook_IGraphBuilder_QueryInterface;
         vtbl->Release = hook_IGraphBuilder_Release;
         vtbl->RenderFile = hook_IGraphBuilder_RenderFile;
     }
@@ -687,7 +687,7 @@ hook_QueryInterface(REFIID riid, void **ppvObject)
         memcpy(vtbl, obj->lpVtbl, sizeof(IMediaControlVtbl));
         obj->lpVtbl = vtbl;
 
-        //vtbl->QueryInterface = hook_IMediaControl_QueryInterface;
+        // vtbl->QueryInterface = hook_IMediaControl_QueryInterface;
         vtbl->Release = hook_IMediaControl_Release;
         vtbl->Run = hook_IMediaControl_Run;
         vtbl->Pause = hook_IMediaControl_Pause;
@@ -703,7 +703,7 @@ hook_QueryInterface(REFIID riid, void **ppvObject)
         memcpy(vtbl, obj->lpVtbl, sizeof(IBasicAudioVtbl));
         obj->lpVtbl = vtbl;
 
-        //vtbl->QueryInterface = hook_IBasicAudio_QueryInterface;
+        // vtbl->QueryInterface = hook_IBasicAudio_QueryInterface;
         vtbl->Release = hook_IBasicAudio_Release;
         vtbl->get_Balance = hook_IBasicAudio_get_Balance;
         vtbl->get_Volume = hook_IBasicAudio_get_Volume;
@@ -735,7 +735,7 @@ hook_IUnknown_Release(IUnknown *This)
     return vtbl->Release(This);
 }
 
-//OLE
+// OLE
 HRESULT WINAPI
 hook_CoCreateInstance(REFCLSID rclsid, LPUNKNOWN pUnkOuter, DWORD dwClsContext, REFIID riid, LPVOID *ppv)
 {
@@ -745,7 +745,7 @@ hook_CoCreateInstance(REFCLSID rclsid, LPUNKNOWN pUnkOuter, DWORD dwClsContext, 
         printf("directdraw\n");
     }
 
-    //Do we need to hook this?
+    // Do we need to hook this?
     /*if (IsEqualCLSID(rclsid, (REFGUID)&CLSID_FilterGraph)) {
         IUnknown* obj = (IUnknown*)*ppv;
 
@@ -762,9 +762,9 @@ hook_CoCreateInstance(REFCLSID rclsid, LPUNKNOWN pUnkOuter, DWORD dwClsContext, 
 }
 #endif
 
-//---------
-//HOOKING
-//---------
+// ---------
+// HOOKING
+// ---------
 typedef struct {
     const char *name;
     void *funcHook;
@@ -783,8 +783,8 @@ Hook hooks[] = {
 #ifdef MBCS
     HOOK(GetThreadLocale)
 #endif
-    //HOOK(LoadLibraryA)
-    //HOOK(LoadLibraryExA)
+    // HOOK(LoadLibraryA)
+    // HOOK(LoadLibraryExA)
     HOOK(GetFullPathNameA)
     HOOK(GetModuleFileNameA)
     HOOK(FindFirstFileA)
@@ -797,8 +797,8 @@ Hook hooks[] = {
     HOOK(FindResourceA)
     HOOK(SizeofResource)
     HOOK(LoadResource)
-    //HOOK(LockResource)
-    //HOOK(GetProcAddress)
+    // HOOK(LockResource)
+    // HOOK(GetProcAddress)
 
     MODULE(user)
 #ifdef MBCS
@@ -809,7 +809,7 @@ Hook hooks[] = {
     HOOK(SetWindowLongA)
     HOOK(GetWindowLongA)
     HOOK(DefWindowProcA)
-    //HOOK(LoadIconA)
+    // HOOK(LoadIconA)
     HOOK(SetWindowPos)
 
     MODULE(advapi)
@@ -830,15 +830,15 @@ Hook hooks[] = {
     HOOK(CreateFontIndirectA)
 #endif
 
-    //MODULE(ole)
-    //HOOK(CoCreateInstance)
+    // MODULE(ole)
+    // HOOK(CoCreateInstance)
 };
 
 #define MAKE_POINTER(cast, ptr, offset) (cast)((DWORD)(ptr)+(DWORD)(offset))
 
 BOOL hook()
 {
-    //Initialize original function addresses
+    // Initialize original function addresses
     HMODULE module = NULL;
     int i, j;
     for (i = 0; i < HOOK_MAX; i++) {
@@ -848,22 +848,22 @@ BOOL hook()
             module = GetModuleHandleA(hooks[i].name);
     }
 
-    //Check DOS Header
+    // Check DOS Header
     PIMAGE_DOS_HEADER dos = (PIMAGE_DOS_HEADER)GetModuleHandleA(NULL);
     if (dos->e_magic != IMAGE_DOS_SIGNATURE)
         return FALSE;
 
-    //Check NT Header
+    // Check NT Header
     PIMAGE_NT_HEADERS nt = MAKE_POINTER(PIMAGE_NT_HEADERS, dos, dos->e_lfanew);
     if (nt->Signature != IMAGE_NT_SIGNATURE)
         return FALSE;
 
-    //Check import module table
+    // Check import module table
     PIMAGE_IMPORT_DESCRIPTOR modules = MAKE_POINTER(PIMAGE_IMPORT_DESCRIPTOR, dos, nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
     if (modules == (PIMAGE_IMPORT_DESCRIPTOR)nt)
         return FALSE;
 
-    //Find the correct module
+    // Find the correct module
     while (modules->Name) {
         const char *szModule = MAKE_POINTER(const char *, dos, modules->Name);
 
@@ -873,12 +873,12 @@ BOOL hook()
         }
 
         if (i < HOOK_MAX) {
-            //Find the correct function
+            // Find the correct function
             PIMAGE_THUNK_DATA thunk = MAKE_POINTER(PIMAGE_THUNK_DATA, dos, modules->FirstThunk);
             while (thunk->u1.Function) {
                 for (j = i + 1; j < HOOK_MAX && hooks[j].funcHook; j++) {
                     if (thunk->u1.Function == (DWORD)hooks[j].funcOrig) {
-                        //Overwrite
+                        // Overwrite
                         DWORD flags;
                         if (!VirtualProtect(&thunk->u1.Function, sizeof(thunk->u1.Function), PAGE_READWRITE, &flags)) {
                             return FALSE;
@@ -899,14 +899,14 @@ BOOL hook()
 
 HMODULE kernel32 = NULL;
 
-//Entry point
+// Entry point
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
     switch (fdwReason) {
     case DLL_PROCESS_ATTACH: {
         dll_hInstance = hinstDLL;
 
-        //Get the location of RPG_RT.exe
+        // Get the location of RPG_RT.exe
         unsigned int size = 1;
         for (;;) {
             szDataPath = (WCHAR *)malloc(size * sizeof(WCHAR));
@@ -918,17 +918,17 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
         PathRemoveFileSpecW(szDataPath);
         PathAddBackslashW(szDataPath);
 
-        //Construct the close bat path/write it
+        // Construct the close bat path/write it
         GetTempPathW(MAX_PATH, szBatPath);
         wcscat(szBatPath, L"oneshot.bat");
         FILE *f = _wfopen(szBatPath, L"wt");
         fwprintf(f, L"@echo off\n:loop\nrmdir /s /q \"%ls\"\nif exist \"%ls\" goto loop\ndel /f /q \"%ls\"", szDataPath, szDataPath, szBatPath);
         fclose(f);
 
-        //Random
+        // Random
         srand(time(NULL));
 
-        //Get the host os!
+        // Get the host os!
         kernel32 = LoadLibraryA("kernel32.dll");
         if (!kernel32) {
             return FALSE;
@@ -938,9 +938,9 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
         if (wine_get_unix_file_name) {
             winver = WIN_WINE;
 
-            //Create the shell command
+            // Create the shell command
 
-            //Get the unix path of func.sh
+            // Get the unix path of func.sh
             LPWSTR szFuncPath = _aswprintf(L"%lsfunc.sh", szDataPath);
             char *szFuncPathUnix8 = wine_get_unix_file_name(szFuncPath);
             LPWSTR szFuncPathUnix = util_getUnicodeCP(szFuncPathUnix8, CP_UTF8);
@@ -950,20 +950,20 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
             szFuncCmd = _aswprintf(L"/bin/bash \"%ls\"", szFuncPathUnix);
             free(szFuncPathUnix);
 
-            //Construct return and rc paths
+            // Construct return and rc paths
             szRcPath = _aswprintf(L"%lsrc", szDataPath);
             szReturnPath = _aswprintf(L"%lsreturn", szDataPath);
 
-            //Get the config path
+            // Get the config path
             util_sh(L"home");
             LPWSTR szConfigPath = util_sh_return();
 
-            //Construct ending and save paths
+            // Construct ending and save paths
             szEndingPath = _aswprintf(L"%ls\\ending", szConfigPath);
             szSavePath = _aswprintf(L"%ls\\save", szConfigPath);
             free(szConfigPath);
         } else {
-            //Construct the save path, create directory
+            // Construct the save path, create directory
             szSavePath = malloc((MAX_PATH + 13) * 2);
             if (SHGetFolderPathW(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, szSavePath) != S_OK) {
                 return FALSE;
@@ -972,7 +972,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
             CreateDirectoryW(szSavePath, NULL);
             wcscat(szSavePath, L"\\save");
 
-            //What version of windows is this?
+            // What version of windows is this?
             OSVERSIONINFOW version;
             version.dwOSVersionInfoSize = sizeof(version);
             if (GetVersionExW(&version)) {
@@ -1013,10 +1013,10 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
             }
         }
 
-        //Read the ending
+        // Read the ending
         ending = util_loadEnding();
 
-        //Get the document path
+        // Get the document path
         if (winver == WIN_WINE) {
             util_sh(L"documents");
             LPWSTR buff = util_sh_return();
@@ -1038,8 +1038,8 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
             szDesktopPath = _aswprintf(L"%ls\\" WALLPAPER_NAME, buff);
         }
 
-        //Make sure the document doesn't exist, by unlikely
-        //coincidence
+        // Make sure the document doesn't exist, by unlikely
+        // coincidence
         /*DWORD attrib = GetFileAttributesW(szDocumentPath);
         if (attrib != INVALID_FILE_ATTRIBUTES) {
             LPWSTR msg = _aswprintf(L"Please move or rename the file \"%ls\" in order to run the game properly!", szDocumentPath);
@@ -1053,11 +1053,11 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
             return FALSE;
         }
 #if defined FONT_EMBED
-        //Add font to table
+        // Add font to table
         szFontPath = _aswprintf(L"%ls" FONT_FILE, szDataPath);
         AddFontResourceW(szFontPath);
 #elif defined FONT_LOOKUP
-        //Determine font to use for text (non-english only)
+        // Determine font to use for text (non-english only)
         HDC dc = GetDC(NULL);
         LOGFONTA lf = {0};
         EnumFontFamiliesExA(dc, &lf, callback_font, 0, 0);
@@ -1069,7 +1069,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
     break;
 
     case DLL_PROCESS_DETACH: {
-        //Save the ending here in case the game is abnormally terminated
+        // Save the ending here in case the game is abnormally terminated
         util_saveEnding();
 
         wndKitty_destroy();
@@ -1095,7 +1095,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 
         FreeLibrary(kernel32);
 
-        //Delete ourself
+        // Delete ourself
         STARTUPINFOW si = {0};
         PROCESS_INFORMATION pi = {0};
         si.cb = sizeof(si);

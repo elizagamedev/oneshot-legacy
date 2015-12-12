@@ -19,7 +19,7 @@ Pixmap getWallpaperPixmap(Display *display, Window root)
     prop_root = XInternAtom(display, "_XROOTPMAP_ID", True);
     prop_esetroot = XInternAtom(display, "ESETROOT_PMAP_ID", True);
 
-    //The current pixmap being used in the atom
+    // The current pixmap being used in the atom
     Pixmap pixmap = NULL;
 
     if (prop_root != None && prop_esetroot != None) {
@@ -28,7 +28,7 @@ Pixmap getWallpaperPixmap(Display *display, Window root)
             XGetWindowProperty(display, root, prop_esetroot, 0L, 1L, False, AnyPropertyType, &type, &format, &length, &after, &data_esetroot);
             if (data_root && data_esetroot) {
                 if (type == XA_PIXMAP && *((Pixmap *)data_root) == *((Pixmap *)data_esetroot)) {
-                    //Record it
+                    // Record it
                     pixmap = *((Pixmap *)data_root);
                 }
             }
@@ -45,7 +45,7 @@ setWallpaper(Display *display, Window root, int depth, unsigned int width, unsig
 {
     Pixmap pixmapCurrent = getWallpaperPixmap(display, root);
 
-    //Let's overwrite the properties with our pixmap now
+    // Let's overwrite the properties with our pixmap now
     Atom prop_root, prop_esetroot;
     prop_root = XInternAtom(display, "_XROOTPMAP_ID", False);
     prop_esetroot = XInternAtom(display, "ESETROOT_PMAP_ID", False);
@@ -55,7 +55,7 @@ setWallpaper(Display *display, Window root, int depth, unsigned int width, unsig
         return 1;
     }
 
-    //Create the pixmap
+    // Create the pixmap
     GC gc = XCreateGC(display, root, 0, 0);
     Pixmap pixmap = XCreatePixmap(display, root, width, height, depth);
     XImage *img = XCreateImage(display, CopyFromParent, depth, ZPixmap, 0, (char *)pixels, width, height, 32, 0);
@@ -64,11 +64,11 @@ setWallpaper(Display *display, Window root, int depth, unsigned int width, unsig
     XDestroyImage(img);
     XFreeGC(display, gc);
 
-    //Change the properties for the compositor
+    // Change the properties for the compositor
     XChangeProperty(display, root, prop_root, XA_PIXMAP, 32, PropModeReplace, (unsigned char *)&pixmap, 1);
     XChangeProperty(display, root, prop_esetroot, XA_PIXMAP, 32, PropModeReplace, (unsigned char *)&pixmap, 1);
 
-    //Change the root window
+    // Change the root window
     XSetWindowBackgroundPixmap(display, root, pixmap);
     XClearWindow(display, root);
     XFlush(display);
@@ -82,7 +82,7 @@ getWallpaper(Display *display, Window root, unsigned int *width, unsigned int *h
 {
     Pixmap pixmap = getWallpaperPixmap(display, root);
 
-    //Get the root window size
+    // Get the root window size
     XWindowAttributes xwa;
     XGetWindowAttributes(display, root, &xwa);
     *width = xwa.width;
@@ -91,10 +91,10 @@ getWallpaper(Display *display, Window root, unsigned int *width, unsigned int *h
     *pixels = malloc(*width * *height * 4);
     memset(*pixels, 0, *width * *height * 4);
 
-    //Now read the data from the pixmap
+    // Now read the data from the pixmap
     XImage *img = XGetImage(display, pixmap, 0, 0, *width, *height, AllPlanes, ZPixmap);
 
-    //Copy data
+    // Copy data
     int x, y;
     for (y = 0; y < *height; y++) {
         for (x = 0; x < *width; x++) {
@@ -115,24 +115,24 @@ main(int argc, char **argv)
 
     int rc = 0;
 
-    //X11
+    // X11
     Display *display = NULL;
     Screen *screen = NULL;
     Window root = NULL;
     int depth = 0;
 
-    //Image data
+    // Image data
     unsigned int width, height;
     char *pixels;
 
-    //Ready the display
+    // Ready the display
     if (!(display = XOpenDisplay(NULL))) {
         fprintf(stderr, "error: could not open X display.\n");
         rc = 1;
         goto end;
     }
 
-    //Ready X11 stuff
+    // Ready X11 stuff
     XSetCloseDownMode(display, RetainPermanent);
     screen = DefaultScreenOfDisplay(display);
     root = DefaultRootWindow(display);
@@ -149,7 +149,7 @@ main(int argc, char **argv)
             goto end;
         }
 
-        //Read raw image data
+        // Read raw image data
         FILE *f = fopen(argv[2], "rb");
         fread(&width, 4, 1, f);
         fread(&height, 4, 1, f);
@@ -162,7 +162,7 @@ main(int argc, char **argv)
     } else if (!strcmp(argv[1], "get")) {
         rc = getWallpaper(display, root, &width, &height, &pixels);
 
-        //Save data
+        // Save data
         srand(time(NULL));
         char filename[256];
         sprintf(filename, "%d", rand());

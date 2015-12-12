@@ -101,12 +101,12 @@ void ogg_read(LPWSTR szFile)
     float buffer[SIZE_SNDFILE_BUFFER];
     sf_count_t count;
 
-    //Set up the ogg and wav SNDFILEs
-    //OGG
+    // Set up the ogg and wav SNDFILEs
+    // OGG
     if (!(ogg = sf_wchar_open(szFile, SFM_READ, &info)))
         goto end;
 
-    //WAV
+    // WAV
     info.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
 
     if (!sf_format_check(&info))
@@ -115,10 +115,10 @@ void ogg_read(LPWSTR szFile)
     if (!(wav = sf_open_virtual(&sfio, SFM_WRITE, &info, NULL)))
         goto end;
 
-    //Write to the wav
+    // Write to the wav
     while ((count = sf_read_float(ogg, buffer, SIZE_SNDFILE_BUFFER)) > 0) {
-        //This volume-reduction code will prevent weird audio clipping
-        //issues in Wine.
+        // This volume-reduction code will prevent weird audio clipping
+        // issues in Wine.
         int i = 0;
         for (; i < SIZE_SNDFILE_BUFFER; i++)
             buffer[i] *= 0.90;
@@ -132,7 +132,7 @@ end:
     if (wav)
         sf_close(wav);
 
-    //Seek to the beginning
+    // Seek to the beginning
     wav_pos = 0;
 }
 

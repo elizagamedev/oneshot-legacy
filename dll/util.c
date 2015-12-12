@@ -92,19 +92,19 @@ void *memmem(const void *haystack, size_t hlen, const void *needle, size_t nlen)
     return NULL;
 }
 
-//This function searches the program's memory for a string of data.
-//It returns the pointer of the first matching block of data after "start".
+// This function searches the program's memory for a string of data.
+// It returns the pointer of the first matching block of data after "start".
 void *util_findMemory(void *start, void *data, size_t size, size_t after)
 {
     MEMORY_BASIC_INFORMATION mbi = {0};
 
-    //Start at start
+    // Start at start
     mbi.BaseAddress = start;
 
     while (VirtualQuery(mbi.BaseAddress + mbi.RegionSize, &mbi, sizeof(mbi))) {
         if (mbi.State & MEM_COMMIT) {
             if (((mbi.Protect) & (PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY | PAGE_READWRITE | PAGE_WRITECOPY)) && !((mbi.Protect) & (PAGE_GUARD | PAGE_NOCACHE | PAGE_NOACCESS))) {
-                //If "start" is in this page, start reading after start + size
+                // If "start" is in this page, start reading after start + size
                 void *searchStart = mbi.BaseAddress;
                 size_t searchSize = mbi.RegionSize;
                 if (mbi.BaseAddress <= start && start < mbi.BaseAddress + mbi.RegionSize) {
@@ -121,7 +121,7 @@ void *util_findMemory(void *start, void *data, size_t size, size_t after)
     return NULL;
 }
 
-//This calls the shell script - for use in WINE
+// This calls the shell script - for use in WINE
 int util_sh(LPWSTR fmt, ...)
 {
     va_list va_args;
@@ -131,14 +131,14 @@ int util_sh(LPWSTR fmt, ...)
     vsnwprintf(args, size, fmt, va_args);
     va_end(va_args);
 
-    //Delete old rc file, just in case
+    // Delete old rc file, just in case
     DeleteFileW(szRcPath);
 
-    //Create buffer for args + shell script path and construct string
+    // Create buffer for args + shell script path and construct string
     LPWSTR cmdline = _aswprintf(L"%ls %ls", szFuncCmd, args);
     free(args);
 
-    //Spawn the process and wait
+    // Spawn the process and wait
     STARTUPINFOW si = {0};
     PROCESS_INFORMATION pi = {0};
     si.cb = sizeof(si);
@@ -149,11 +149,11 @@ int util_sh(LPWSTR fmt, ...)
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
 
-        //Poll for the RC file
+        // Poll for the RC file
         for (;;) {
             DWORD attrib = GetFileAttributesW(szRcPath);
             if (attrib != INVALID_FILE_ATTRIBUTES && !(attrib & FILE_ATTRIBUTE_DIRECTORY)) {
-                //Read the code and quit
+                // Read the code and quit
                 char rc[64];
                 FILE *f = _wfopen(szRcPath, L"rt");
                 fgets(rc, sizeof(rc), f);
@@ -172,7 +172,7 @@ int util_sh(LPWSTR fmt, ...)
 
 LPWSTR util_sh_return()
 {
-    //Read the entire contents of the return file
+    // Read the entire contents of the return file
     FILE *f = _wfopen(szReturnPath, L"rb");
     fseek(f, 0, SEEK_END);
     size_t size = ftell(f);
@@ -182,7 +182,7 @@ LPWSTR util_sh_return()
     fclose(f);
     DeleteFileW(szReturnPath);
 
-    //Convert it to UTF-16
+    // Convert it to UTF-16
     buff[size-1] = 0;
     LPWSTR result = util_getUnicodeCP(buff, CP_UTF8);
     free(buff);
@@ -191,11 +191,11 @@ LPWSTR util_sh_return()
 
 LPWSTR util_getFilenameFromUnicode(LPCWSTR szFile)
 {
-    //Stupid LSD files
+    // Stupid LSD files
     if (*szFile == '\\')
         szFile++;
 
-    //Replace special assets with "dead" version
+    // Replace special assets with "dead" version
     if (ending == ENDING_DEAD && !gameStarted) {
         if (!wcsicmp(szFile, L"Title\\title.xyz"))
             return wcsdup(L"Title\\title_dead.xyz");
@@ -210,7 +210,7 @@ LPWSTR util_getFilenameFromUnicode(LPCWSTR szFile)
             return wcsdup(L"Music\\Distant.ogg");
     }
 
-    //Replace music wav with ogg
+    // Replace music wav with ogg
     if (!_wcsnicmp(szFile, L"Music\\", 6)) {
         LPWSTR result = wcsdup(szFile);
         LPWSTR ext = PathFindExtensionW(result) + 1;
@@ -239,7 +239,7 @@ int util_messagebox(LPCWSTR text, LPCWSTR title, int type)
             return result;
     }
 
-    //We're running windows or we don't have zenity installed
+    // We're running windows or we don't have zenity installed
 
     int flags = 0;
     switch (type) {
@@ -321,14 +321,14 @@ int util_loadEnding()
     int ending = 0;
 
     if (winver == WIN_WINE) {
-        //Read the ending
+        // Read the ending
         FILE *f = _wfopen(szEndingPath, L"rb");
         if (f) {
             fread(&ending, 1, 1, f);
             fclose(f);
         }
     } else {
-        //Read the ending
+        // Read the ending
         HKEY hKey = NULL;
         if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Software\\Oneshot", 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
             DWORD size = sizeof(ending);
@@ -353,15 +353,15 @@ void util_saveEnding()
     if (ending != ENDING_BEGINNING) {
         int endingOld = util_loadEnding();
 
-        //If niko's dead, and niko was dead when we loaded,
-        //just bring him back
+        // If niko's dead, and niko was dead when we loaded,
+        // just bring him back
         if (ending == ENDING_DEAD && endingOld == ENDING_DEAD) {
             DeleteFileW(szSavePath);
             ending = ENDING_DEJAVU;
         }
 
-        //On Windows, save in the registry.
-        //On *nix, save in a file in the home folder (My Documents).
+        // On Windows, save in the registry.
+        // On *nix, save in a file in the home folder (My Documents).
 
         if (winver == WIN_WINE) {
             FILE *f = _wfopen(szEndingPath, L"wb");
