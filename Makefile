@@ -67,7 +67,7 @@ else ifeq ($(LANGUAGE),ko)
 	EXE_CFLAGS	+= -DL_KOREAN
 	DLL_CFLAGS	+= -DL_KOREAN
 else ifeq ($(LANGUAGE),ru)
-	ENCRYPT_EXE = english.exe
+	ENCRYPT_EXE = russian.exe
 	EXE_CFLAGS  += -DL_RUSSIAN
 	DLL_CFLAGS  += -DL_RUSSIAN
 else ifeq ($(LANGUAGE),es)

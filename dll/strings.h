@@ -22,7 +22,7 @@
 
 #elif defined L_RUSSIAN
 
-#define STR_ONESHOT                 L"У тебя есть всего лишь один шанс, %hs."
+#define STR_ONESHOT                 L"У тебя есть всего лишь одна попытка, %hs."
 #define STR_DO_YOU_UNDERSTAND       L"Ты понимаешь, что это значит?"
 #define STR_STILL_HAVING_TROUBLE    L"Все еще не можешь понять? Хочешь подсказку?"
 #define STR_SURELY_YOU_KNOW         L"Точно знаешь, где найти?"

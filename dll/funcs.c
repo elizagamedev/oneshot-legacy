@@ -389,7 +389,7 @@ void func_ReadItem()
     if (variables[VAR_RETURN] == 0) {
         if (firstZero) {
             fclose(saveFile);
-            DeleteFile(szSavePath);
+            DeleteFileW(szSavePath);
         } else {
             firstZero = TRUE;
         }
